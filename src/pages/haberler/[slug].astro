@@ -1,0 +1,204 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { fetchNewsList, fetchNewsBySlug, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
+import type { NewsItem } from '../../lib/payload';
+
+// Generate static paths for all news articles
+export async function getStaticPaths() {
+  try {
+    const data = await fetchNewsList(1, 100);
+    return data.docs.map((item: NewsItem) => ({
+      params: { slug: item.slug },
+    }));
+  } catch {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+
+let news: NewsItem | null = null;
+let error: string | null = null;
+
+try {
+  news = await fetchNewsBySlug(slug!);
+  if (!news) error = 'Haber bulunamadı.';
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Haber yüklenemedi.';
+}
+
+const imageUrl = news?.featuredImage ? resolveMediaUrl(news.featuredImage.url) : null;
+const description = news?.seo?.metaDescription ?? lexicalToPlainText(news?.body).slice(0, 160);
+
+/**
+ * Render Payload Lexical rich-text nodes to HTML string.
+ * Handles: heading (h1–h6), paragraph, text (bold, italic, underline).
+ */
+function lexicalToHtml(body: unknown): string {
+  if (!body || typeof body !== 'object') return '';
+  const root = (body as { root?: { children?: unknown[] } }).root;
+  if (!root?.children) return '';
+
+  function renderNode(node: unknown): string {
+    if (!node || typeof node !== 'object') return '';
+    const n = node as {
+      type?: string;
+      tag?: string;
+      text?: string;
+      format?: number;
+      children?: unknown[];
+    };
+
+    if (n.type === 'text') {
+      let text = n.text ?? '';
+      // format bitmask: 1=bold, 2=italic, 4=strikethrough, 8=underline, 16=code, 32=subscript, 64=superscript
+      if (n.format && n.format & 1) text = `<strong>${text}</strong>`;
+      if (n.format && n.format & 2) text = `<em>${text}</em>`;
+      if (n.format && n.format & 8) text = `<u>${text}</u>`;
+      if (n.format && n.format & 16) text = `<code>${text}</code>`;
+      return text;
+    }
+
+    const inner = n.children ? n.children.map(renderNode).join('') : '';
+
+    switch (n.type) {
+      case 'heading':
+        return `<${n.tag}>${inner}</${n.tag}>`;
+      case 'paragraph':
+        return `<p>${inner}</p>`;
+      case 'list':
+        return `<ul>${inner}</ul>`;
+      case 'listitem':
+        return `<li>${inner}</li>`;
+      case 'quote':
+        return `<blockquote>${inner}</blockquote>`;
+      case 'link': {
+        const l = n as unknown as { fields?: { url?: string } };
+        const href = l.fields?.url ?? '#';
+        return `<a href="${href}">${inner}</a>`;
+      }
+      default:
+        return inner;
+    }
+  }
+
+  return root.children.map(renderNode).join('\n');
+}
+
+const bodyHtml = news ? lexicalToHtml(news.body) : '';
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <BaseHead
+      title={news?.title ?? 'Haber'}
+      description={description}
+    />
+    <style>
+      .hero-image {
+        width: 100%;
+        margin-bottom: 2rem;
+      }
+      .hero-image img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: var(--box-shadow);
+        display: block;
+      }
+      .article-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: rgb(var(--gray));
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .article-meta .category {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--accent);
+        font-size: 0.75rem;
+      }
+      .article-meta .author {
+        font-weight: 600;
+        color: rgb(var(--gray-dark));
+      }
+      .prose {
+        width: 720px;
+        max-width: calc(100% - 2em);
+        margin: auto;
+        padding: 1em;
+        color: rgb(var(--gray-dark));
+      }
+      .prose h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+      .prose h2 { font-size: 1.75rem; margin: 1.5rem 0 0.75rem; }
+      .prose h3 { font-size: 1.4rem; margin: 1.25rem 0 0.5rem; }
+      .prose p  { margin-bottom: 1.25rem; line-height: 1.8; }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: var(--accent);
+        font-size: 0.9rem;
+        text-decoration: none;
+      }
+      .back-link:hover { text-decoration: underline; }
+      .error-message {
+        color: #c00;
+        padding: 1rem;
+        border: 1px solid #fcc;
+        border-radius: 8px;
+        background: #fff5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <div class="prose">
+        <a href="/haberler" class="back-link">← Tüm Haberler</a>
+
+        {error && <p class="error-message">⚠️ {error}</p>}
+
+        {news && (
+          <article>
+            {imageUrl && (
+              <div class="hero-image">
+                <img
+                  src={imageUrl}
+                  alt={news.featuredImage?.alt ?? news.title}
+                  width={news.featuredImage?.width ?? 1200}
+                  height={news.featuredImage?.height ?? 675}
+                />
+              </div>
+            )}
+
+            <div class="article-meta">
+              {news.category && <span class="category">{news.category.name}</span>}
+              {news.author && <span class="author">{news.author.name}</span>}
+            </div>
+
+            <h1>{news.title}</h1>
+
+            {description && (
+              <p style="color: rgb(var(--gray)); font-style: italic; margin-bottom: 1.5rem;">
+                {description}
+              </p>
+            )}
+
+            <hr />
+
+            <div set:html={bodyHtml} />
+          </article>
+        )}
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>

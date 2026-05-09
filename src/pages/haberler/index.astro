@@ -1,0 +1,154 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { fetchNewsList, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
+import type { NewsItem } from '../../lib/payload';
+
+let news: NewsItem[] = [];
+let error: string | null = null;
+
+try {
+  const data = await fetchNewsList(1, 20);
+  news = data.docs;
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
+}
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <BaseHead title="Haberler" description="Son dakika ve güncel haberler" />
+    <style>
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      .news-card {
+        border: 1px solid rgb(var(--gray-light));
+        border-radius: 12px;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+        background: #fff;
+      }
+      .news-card:hover {
+        box-shadow: var(--box-shadow);
+      }
+      .news-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 0;
+        display: block;
+      }
+      .news-card-body {
+        padding: 1.25rem;
+      }
+      .news-card-category {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+      }
+      .news-card h2 {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.4;
+      }
+      .news-card h2 a {
+        color: rgb(var(--black));
+        text-decoration: none;
+      }
+      .news-card h2 a:hover {
+        color: var(--accent);
+      }
+      .news-card-description {
+        font-size: 0.9rem;
+        color: rgb(var(--gray));
+        margin: 0 0 1rem 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .news-card-footer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: rgb(var(--gray));
+      }
+      .news-card-footer span::before {
+        content: '·';
+        margin-right: 0.5rem;
+      }
+      .error-message {
+        color: #c00;
+        padding: 1rem;
+        border: 1px solid #fcc;
+        border-radius: 8px;
+        background: #fff5f5;
+      }
+      .page-title {
+        border-bottom: 2px solid rgb(var(--gray-light));
+        padding-bottom: 0.5rem;
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <h1 class="page-title">Haberler</h1>
+
+      {error && <p class="error-message">⚠️ {error}</p>}
+
+      {news.length === 0 && !error && <p>Henüz haber bulunmuyor.</p>}
+
+      <div class="news-grid">
+        {news.map((item) => {
+          const description =
+            item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 160);
+          const imageUrl = item.featuredImage
+            ? resolveMediaUrl(item.featuredImage.url)
+            : null;
+
+          return (
+            <article class="news-card">
+              {imageUrl && (
+                <a href={`/haberler/${item.slug}`}>
+                  <img
+                    src={imageUrl}
+                    alt={item.featuredImage?.alt ?? item.title}
+                    width={item.featuredImage?.width ?? 600}
+                    height={item.featuredImage?.height ?? 338}
+                  />
+                </a>
+              )}
+              <div class="news-card-body">
+                {item.category && (
+                  <p class="news-card-category">{item.category.name}</p>
+                )}
+                <h2>
+                  <a href={`/haberler/${item.slug}`}>{item.title}</a>
+                </h2>
+                {description && (
+                  <p class="news-card-description">{description}</p>
+                )}
+                <div class="news-card-footer">
+                  <span>{item.author?.name}</span>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>
