@@ -2,20 +2,10 @@
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
-import { fetchNewsList, fetchNewsBySlug, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
+import { fetchNewsBySlug, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
 import type { NewsItem } from '../../lib/payload';
 
-// Generate static paths for all news articles
-export async function getStaticPaths() {
-  try {
-    const data = await fetchNewsList(1, 100);
-    return data.docs.map((item: NewsItem) => ({
-      params: { slug: item.slug },
-    }));
-  } catch {
-    return [];
-  }
-}
+// SSR mode — no getStaticPaths needed, every request fetches live data
 
 const { slug } = Astro.params;
 
