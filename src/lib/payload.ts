@@ -1,30 +1,31 @@
 /**
  * Payload CMS API client.
  *
- * Production (Cloudflare Workers): uses PABACK Service Binding for
- * zero-latency internal requests — no public internet round-trip.
+ * Production (Cloudflare Workers): uses PABACK Service Binding via
+ * `import { env } from "cloudflare:workers"` — Astro v6 compatible.
  *
  * Local dev: falls back to the public PAYLOAD_API_URL env variable.
  */
 
-const PUBLIC_API_URL = import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
+import { env as cfEnv } from 'cloudflare:workers';
+
+const PUBLIC_API_URL =
+  import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
 
 /**
  * Core fetch helper.
- * Pass `runtime` (Astro.locals.runtime) from SSR pages to use the
- * Service Binding in production. Omit it for prerendered/static pages.
+ * Uses PABACK Service Binding in production, public URL in local dev.
  */
-export async function fetchFromPayload(
-  endpoint: string,
-  runtime?: App.Locals['runtime']
-): Promise<unknown> {
+export async function fetchFromPayload(endpoint: string): Promise<unknown> {
   let res: Response;
 
-  if (runtime?.env?.PABACK) {
+  const paback = (cfEnv as unknown as { PABACK?: Fetcher }).PABACK;
+
+  if (paback) {
     // Production: Service Binding — direct Worker-to-Worker call
-    res = await runtime.env.PABACK.fetch(`http://internal${endpoint}`);
+    res = await paback.fetch(`http://paback${endpoint}`);
   } else {
-    // Local dev or prerendered: public URL
+    // Local dev: public URL
     res = await fetch(`${PUBLIC_API_URL}${endpoint}`);
   }
 
@@ -85,34 +86,24 @@ export interface NewsListResponse {
 /** Fetch all news articles */
 export async function fetchNewsList(
   page = 1,
-  limit = 20,
-  runtime?: App.Locals['runtime']
+  limit = 20
 ): Promise<NewsListResponse> {
   return fetchFromPayload(
-    `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`,
-    runtime
+    `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`
   ) as Promise<NewsListResponse>;
 }
 
 /** Fetch a single news article by ID */
-export async function fetchNewsById(
-  id: number,
-  runtime?: App.Locals['runtime']
-): Promise<NewsItem> {
+export async function fetchNewsById(id: number): Promise<NewsItem> {
   return fetchFromPayload(
-    `/api/news/${id}?depth=2&draft=true&trash=false`,
-    runtime
+    `/api/news/${id}?depth=2&draft=true&trash=false`
   ) as Promise<NewsItem>;
 }
 
 /** Fetch a single news article by slug */
-export async function fetchNewsBySlug(
-  slug: string,
-  runtime?: App.Locals['runtime']
-): Promise<NewsItem | null> {
+export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
   const data = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`,
-    runtime
+    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
   ) as NewsListResponse;
   return data.docs[0] ?? null;
 }
