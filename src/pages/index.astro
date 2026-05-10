@@ -3,47 +3,386 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { fetchNewsList, resolveMediaUrl, lexicalToPlainText } from '../lib/payload';
+import type { NewsItem } from '../lib/payload';
+
+let news: NewsItem[] = [];
+let error: string | null = null;
+
+try {
+  const data = await fetchNewsList(1, 50);
+  news = data.docs;
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
+}
+
+// İlk 10 haber sayfada gösterilir, geri kalanı "Load More" ile açılır
+const initialCount = 10;
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+<html lang="tr">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <style>
+      /* ── CTA Banner ── */
+      .cta-banner {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        color: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .cta-banner .rocket {
+        font-size: 2rem;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .cta-banner .cta-text h3 {
+        margin: 0 0 0.25rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #f0c040;
+        letter-spacing: 0.03em;
+      }
+      .cta-banner .cta-text p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.8);
+        line-height: 1.5;
+      }
+
+      /* ── Section title ── */
+      .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: rgb(var(--black));
+        margin: 0 0 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--accent);
+        display: inline-block;
+      }
+
+      /* ── Featured (big) card ── */
+      .featured-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgb(var(--gray-light));
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        transition: box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+      }
+      .featured-card:hover {
+        box-shadow: var(--box-shadow);
+      }
+      .featured-card img {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 0;
+        display: block;
+      }
+      .featured-card .card-body {
+        padding: 1.5rem 1.5rem 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .featured-card .card-body .category {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+      }
+      .featured-card .card-body h2 {
+        font-size: 1.5rem;
+        margin: 0 0 0.75rem;
+        line-height: 1.3;
+        color: rgb(var(--black));
+      }
+      .featured-card .card-body .desc {
+        font-size: 0.9rem;
+        color: rgb(var(--gray));
+        margin: 0 0 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .featured-card .card-body .author {
+        font-size: 0.8rem;
+        color: rgb(var(--gray));
+        font-weight: 600;
+      }
+
+      /* ── Small card grid ── */
+      .small-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      .small-card {
+        border: 1px solid rgb(var(--gray-light));
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+        transition: box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+      }
+      .small-card:hover {
+        box-shadow: var(--box-shadow);
+      }
+      .small-card img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+      }
+      .small-card .card-body {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .small-card .category {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        margin-bottom: 0.35rem;
+      }
+      .small-card h3 {
+        font-size: 0.95rem;
+        margin: 0 0 0.5rem;
+        line-height: 1.4;
+        color: rgb(var(--black));
+        flex: 1;
+      }
+      .small-card .desc {
+        font-size: 0.8rem;
+        color: rgb(var(--gray));
+        margin: 0 0 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .small-card .author {
+        font-size: 0.75rem;
+        color: rgb(var(--gray));
+        font-weight: 600;
+        margin-top: auto;
+      }
+
+      /* ── Load More ── */
+      .load-more-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      #load-more-btn {
+        display: block;
+        margin: 0 auto 3rem;
+        padding: 0.75rem 2.5rem;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+      }
+      #load-more-btn:hover {
+        background: var(--accent-dark);
+        transform: translateY(-1px);
+      }
+      #load-more-btn:active {
+        transform: translateY(0);
+      }
+      #load-more-btn.hidden {
+        display: none;
+      }
+
+      /* ── No image placeholder ── */
+      .no-img {
+        background: rgb(var(--gray-light));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgb(var(--gray));
+        font-size: 2rem;
+      }
+      .featured-card .no-img { height: 280px; }
+      .small-card .no-img { height: 160px; }
+
+      /* ── Responsive ── */
+      @media (max-width: 720px) {
+        .featured-card {
+          grid-template-columns: 1fr;
+        }
+        .featured-card img,
+        .featured-card .no-img {
+          height: 200px;
+        }
+        .featured-card .card-body {
+          padding: 1rem;
+        }
+        .small-grid,
+        .load-more-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+
+      <!-- CTA Banner -->
+      <div class="cta-banner">
+        <div class="rocket">🚀</div>
+        <div class="cta-text">
+          <h3>Yenileniyoruz!</h3>
+          <p>Para Analiz yapay zekayla güçlendirilmiş güçlü bir altyapı ile yenileniyor. Anlayışınız için teşekkürler, bizi izlemeye devam edin.</p>
+        </div>
+      </div>
+
+      <!-- Section Title -->
+      <h2 class="section-title">Günün Gündemi</h2>
+
+      {error && (
+        <p style="color:#c00;padding:1rem;border:1px solid #fcc;border-radius:8px;background:#fff5f5;">
+          ⚠️ {error}
+        </p>
+      )}
+
+      {news.length === 0 && !error && <p>Henüz haber bulunmuyor.</p>}
+
+      {news.length > 0 && (() => {
+        // Slice groups
+        const big1   = news[0];
+        const small1 = news.slice(1, 5);
+        const big2   = news[6] ?? null;
+        const small2 = news.slice(7, 11);
+        const rest   = news.slice(11);
+
+        function featuredCard(item: NewsItem) {
+          const imgUrl = item.featuredImage ? resolveMediaUrl(item.featuredImage.url) : null;
+          const desc = item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 160);
+          return (
+            <a href={`/haberler/${item.slug}`} class="featured-card">
+              {imgUrl
+                ? <img src={imgUrl} alt={item.featuredImage?.alt ?? item.title} width={600} height={280} />
+                : <div class="no-img">📰</div>
+              }
+              <div class="card-body">
+                {item.category && <p class="category">{item.category.name}</p>}
+                <h2>{item.title}</h2>
+                {desc && <p class="desc">{desc}</p>}
+                {item.author && <span class="author">{item.author.name}</span>}
+              </div>
+            </a>
+          );
+        }
+
+        function smallCard(item: NewsItem) {
+          const imgUrl = item.featuredImage ? resolveMediaUrl(item.featuredImage.url) : null;
+          const desc = item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 120);
+          return (
+            <a href={`/haberler/${item.slug}`} class="small-card">
+              {imgUrl
+                ? <img src={imgUrl} alt={item.featuredImage?.alt ?? item.title} width={400} height={160} />
+                : <div class="no-img">📰</div>
+              }
+              <div class="card-body">
+                {item.category && <p class="category">{item.category.name}</p>}
+                <h3>{item.title}</h3>
+                {desc && <p class="desc">{desc}</p>}
+                {item.author && <span class="author">{item.author.name}</span>}
+              </div>
+            </a>
+          );
+        }
+
+        return (
+          <>
+            {/* Block 1: 1 big */}
+            {featuredCard(big1)}
+
+            {/* Block 2: 4 small */}
+            {small1.length > 0 && (
+              <div class="small-grid">
+                {small1.map(smallCard)}
+              </div>
+            )}
+
+            {/* Block 3: 1 big */}
+            {big2 && featuredCard(big2)}
+
+            {/* Block 4: 4 small */}
+            {small2.length > 0 && (
+              <div class="small-grid">
+                {small2.map(smallCard)}
+              </div>
+            )}
+
+            {/* Load More section */}
+            {rest.length > 0 && (
+              <>
+                <div class="load-more-grid" id="load-more-grid">
+                  {rest.map((item) => (
+                    <div class="load-more-item" style="display:none">
+                      {smallCard(item)}
+                    </div>
+                  ))}
+                </div>
+                <button id="load-more-btn">Daha Fazla Göster</button>
+              </>
+            )}
+          </>
+        );
+      })()}
+
+    </main>
+    <Footer />
+
+    <script>
+      const btn = document.getElementById('load-more-btn');
+      const items = document.querySelectorAll('#load-more-grid .load-more-item');
+      let shown = 0;
+      const batch = 4;
+
+      function showNext() {
+        const end = Math.min(shown + batch, items.length);
+        for (let i = shown; i < end; i++) {
+          (items[i] as HTMLElement).style.display = 'block';
+        }
+        shown = end;
+        if (shown >= items.length && btn) {
+          btn.classList.add('hidden');
+        }
+      }
+
+      if (btn) {
+        btn.addEventListener('click', showNext);
+      }
+    </script>
+  </body>
 </html>
