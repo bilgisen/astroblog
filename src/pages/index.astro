@@ -65,9 +65,8 @@ try {
 
       /* ── Featured (big) card ── */
       .featured-card {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
+        display: flex;
+        flex-direction: column;
         margin-bottom: 2rem;
         border: 1px solid rgb(var(--gray-light));
         border-radius: 12px;
@@ -82,16 +81,18 @@ try {
       }
       .featured-card img {
         width: 100%;
-        height: 280px;
+        aspect-ratio: 16 / 9;
         object-fit: cover;
-        border-radius: 0;
         display: block;
       }
+      .featured-card .no-img {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+      }
       .featured-card .card-body {
-        padding: 1.5rem 1.5rem 1.5rem 0;
+        padding: 1.25rem 1.5rem 1.5rem;
         display: flex;
         flex-direction: column;
-        justify-content: center;
       }
       .featured-card .card-body .category {
         font-size: 0.7rem;
@@ -102,19 +103,20 @@ try {
         margin-bottom: 0.5rem;
       }
       .featured-card .card-body h2 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
         margin: 0 0 0.75rem;
         line-height: 1.3;
         color: rgb(var(--black));
       }
       .featured-card .card-body .desc {
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: rgb(var(--gray));
         margin: 0 0 1rem;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        line-height: 1.6;
       }
       .featured-card .card-body .author {
         font-size: 0.8rem;
@@ -145,9 +147,13 @@ try {
       }
       .small-card img {
         width: 100%;
-        height: 160px;
+        aspect-ratio: 16 / 9;
         object-fit: cover;
         display: block;
+      }
+      .small-card .no-img {
+        width: 100%;
+        aspect-ratio: 16 / 9;
       }
       .small-card .card-body {
         padding: 1rem;
@@ -164,7 +170,7 @@ try {
         margin-bottom: 0.35rem;
       }
       .small-card h3 {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         margin: 0 0 0.5rem;
         line-height: 1.4;
         color: rgb(var(--black));
@@ -226,21 +232,9 @@ try {
         color: rgb(var(--gray));
         font-size: 2rem;
       }
-      .featured-card .no-img { height: 280px; }
-      .small-card .no-img { height: 160px; }
 
       /* ── Responsive ── */
       @media (max-width: 720px) {
-        .featured-card {
-          grid-template-columns: 1fr;
-        }
-        .featured-card img,
-        .featured-card .no-img {
-          height: 200px;
-        }
-        .featured-card .card-body {
-          padding: 1rem;
-        }
         .small-grid,
         .load-more-grid {
           grid-template-columns: 1fr;
@@ -286,7 +280,7 @@ try {
           return (
             <a href={`/haberler/${item.slug}`} class="featured-card">
               {imgUrl
-                ? <img src={imgUrl} alt={item.featuredImage?.alt ?? item.title} width={600} height={280} />
+                ? <img src={imgUrl} alt={item.featuredImage?.alt ?? item.title} width={1200} height={675} />
                 : <div class="no-img">📰</div>
               }
               <div class="card-body">
