@@ -1,0 +1,14 @@
+name = "astroblog"
+compatibility_date = "2026-05-09"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
+[[services]]
+binding = "PABACK"
+service = "paback"
+
+[observability]
+enabled = true
