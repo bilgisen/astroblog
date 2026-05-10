@@ -1,8 +1,12 @@
 {
-  "name": "astro-blog",
+  "name": "astroblog",
+  "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-05-09",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "./dist",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
   "observability": {
     "enabled": true
   }
