@@ -5,11 +5,13 @@ import Header from '../../components/Header.astro';
 import { fetchNewsList, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
 import type { NewsItem } from '../../lib/payload';
 
+const { runtime } = Astro.locals;
+
 let news: NewsItem[] = [];
 let error: string | null = null;
 
 try {
-  const data = await fetchNewsList(1, 20);
+  const data = await fetchNewsList(1, 20, runtime);
   news = data.docs;
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';

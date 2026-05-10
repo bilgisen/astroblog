@@ -8,12 +8,13 @@ import type { NewsItem } from '../../lib/payload';
 // SSR mode — no getStaticPaths needed, every request fetches live data
 
 const { slug } = Astro.params;
+const { runtime } = Astro.locals;
 
 let news: NewsItem | null = null;
 let error: string | null = null;
 
 try {
-  news = await fetchNewsBySlug(slug!);
+  news = await fetchNewsBySlug(slug!, runtime);
   if (!news) error = 'Haber bulunamadı.';
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haber yüklenemedi.';

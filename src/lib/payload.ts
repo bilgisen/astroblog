@@ -1,17 +1,38 @@
-const API_URL = import.meta.env.PAYLOAD_API_URL;
+/**
+ * Payload CMS API client.
+ *
+ * Production (Cloudflare Workers): uses PABACK Service Binding for
+ * zero-latency internal requests — no public internet round-trip.
+ *
+ * Local dev: falls back to the public PAYLOAD_API_URL env variable.
+ */
+
+const PUBLIC_API_URL = import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
 
 /**
- * Fetch data from the Payload CMS API.
- * @param endpoint - The API endpoint path, e.g. "/api/news"
- * @returns Parsed JSON response
+ * Core fetch helper.
+ * Pass `runtime` (Astro.locals.runtime) from SSR pages to use the
+ * Service Binding in production. Omit it for prerendered/static pages.
  */
-export async function fetchFromPayload(endpoint: string) {
-  const res = await fetch(`${API_URL}${endpoint}`);
-  if (!res.ok) throw new Error(`Payload API error: ${res.status}`);
+export async function fetchFromPayload(
+  endpoint: string,
+  runtime?: App.Locals['runtime']
+): Promise<unknown> {
+  let res: Response;
+
+  if (runtime?.env?.PABACK) {
+    // Production: Service Binding — direct Worker-to-Worker call
+    res = await runtime.env.PABACK.fetch(`http://internal${endpoint}`);
+  } else {
+    // Local dev or prerendered: public URL
+    res = await fetch(`${PUBLIC_API_URL}${endpoint}`);
+  }
+
+  if (!res.ok) throw new Error(`Payload API error: ${res.status} ${endpoint}`);
   return res.json();
 }
 
-// --- Type definitions based on the Payload CMS news collection ---
+// --- Type definitions ---
 
 export interface NewsAuthor {
   id: number;
@@ -61,23 +82,38 @@ export interface NewsListResponse {
   hasPrevPage: boolean;
 }
 
-/** Fetch all news articles (published + draft) */
-export async function fetchNewsList(page = 1, limit = 20): Promise<NewsListResponse> {
+/** Fetch all news articles */
+export async function fetchNewsList(
+  page = 1,
+  limit = 20,
+  runtime?: App.Locals['runtime']
+): Promise<NewsListResponse> {
   return fetchFromPayload(
-    `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`
-  );
+    `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`,
+    runtime
+  ) as Promise<NewsListResponse>;
 }
 
 /** Fetch a single news article by ID */
-export async function fetchNewsById(id: number): Promise<NewsItem> {
-  return fetchFromPayload(`/api/news/${id}?depth=2&draft=false&locale=undefined&trash=false`);
+export async function fetchNewsById(
+  id: number,
+  runtime?: App.Locals['runtime']
+): Promise<NewsItem> {
+  return fetchFromPayload(
+    `/api/news/${id}?depth=2&draft=true&trash=false`,
+    runtime
+  ) as Promise<NewsItem>;
 }
 
 /** Fetch a single news article by slug */
-export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
-  const data: NewsListResponse = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
-  );
+export async function fetchNewsBySlug(
+  slug: string,
+  runtime?: App.Locals['runtime']
+): Promise<NewsItem | null> {
+  const data = await fetchFromPayload(
+    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`,
+    runtime
+  ) as NewsListResponse;
   return data.docs[0] ?? null;
 }
 
@@ -87,12 +123,11 @@ export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
  */
 export function resolveMediaUrl(url: string): string {
   if (url.startsWith('http')) return url;
-  return `${API_URL}${url}`;
+  return `${PUBLIC_API_URL}${url}`;
 }
 
 /**
  * Extract plain text from a Payload Lexical rich-text body.
- * Used for excerpts / meta descriptions.
  */
 export function lexicalToPlainText(body: unknown): string {
   if (!body || typeof body !== 'object') return '';
