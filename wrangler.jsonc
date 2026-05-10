@@ -2,7 +2,7 @@
   "name": "astro-blog",
   "compatibility_date": "2026-05-09",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "./dist/client",
+  "pages_build_output_dir": "./dist",
   "observability": {
     "enabled": true
   }
