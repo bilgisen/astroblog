@@ -61,10 +61,10 @@ export interface NewsListResponse {
   hasPrevPage: boolean;
 }
 
-/** Fetch all news articles */
+/** Fetch all news articles (published + draft) */
 export async function fetchNewsList(page = 1, limit = 20): Promise<NewsListResponse> {
   return fetchFromPayload(
-    `/api/news?depth=1&draft=false&trash=false&page=${page}&limit=${limit}`
+    `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`
   );
 }
 
@@ -76,7 +76,7 @@ export async function fetchNewsById(id: number): Promise<NewsItem> {
 /** Fetch a single news article by slug */
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
   const data: NewsListResponse = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${slug}&depth=2&draft=false&trash=false&limit=1`
+    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
   );
   return data.docs[0] ?? null;
 }
