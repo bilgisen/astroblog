@@ -105,17 +105,17 @@ export async function fetchNewsById(id: number): Promise<NewsItem> {
 
 /** Fetch a single news article by slug */
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
-  // Try both original and normalized slug
-  const normalized = normalizeSlug(slug);
+  // Normalize the incoming slug first (handles Turkish chars in URL)
+  const normalized = normalizeSlug(decodeURIComponent(slug));
+  // Query with the original slug from Payload (un-normalized)
+  // We fetch all and find by normalized comparison
   const data = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
+    `/api/news?depth=2&draft=true&trash=false&limit=100`
   ) as NewsListResponse;
-  if (data.docs[0]) return { ...data.docs[0], slug: normalized };
-  // Fallback: try with normalized slug
-  const data2 = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${encodeURIComponent(normalized)}&depth=2&draft=true&trash=false&limit=1`
-  ) as NewsListResponse;
-  return data2.docs[0] ? { ...data2.docs[0], slug: normalized } : null;
+  const match = data.docs.find(
+    item => normalizeSlug(item.slug) === normalized
+  );
+  return match ? { ...match, slug: normalized } : null;
 }
 
 /**
@@ -236,16 +236,14 @@ export async function fetchBlogList(
 
 /** Fetch a single blog post by slug */
 export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
-  const normalized = normalizeSlug(slug);
+  const normalized = normalizeSlug(decodeURIComponent(slug));
   const data = await fetchFromPayload(
-    `/api/blog?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
+    `/api/blog?depth=2&draft=true&trash=false&limit=100`
   ) as BlogListResponse;
-  if (data.docs[0]) return { ...data.docs[0], slug: normalized };
-  // Fallback: try with normalized slug
-  const data2 = await fetchFromPayload(
-    `/api/blog?where[slug][equals]=${encodeURIComponent(normalized)}&depth=2&draft=true&trash=false&limit=1`
-  ) as BlogListResponse;
-  return data2.docs[0] ? { ...data2.docs[0], slug: normalized } : null;
+  const match = data.docs.find(
+    item => normalizeSlug(item.slug) === normalized
+  );
+  return match ? { ...match, slug: normalized } : null;
 }
 
 /**
