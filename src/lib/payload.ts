@@ -102,8 +102,10 @@ export async function fetchNewsById(id: number): Promise<NewsItem> {
 
 /** Fetch a single news article by slug */
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
+  // Decode URL-encoded slug (handles Turkish chars like %C3%BC → ü)
+  const decoded = decodeURIComponent(slug);
   const data = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
+    `/api/news?where[slug][equals]=${encodeURIComponent(decoded)}&depth=2&draft=true&trash=false&limit=1`
   ) as NewsListResponse;
   return data.docs[0] ?? null;
 }
