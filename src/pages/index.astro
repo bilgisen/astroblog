@@ -273,46 +273,32 @@ function formatDate(dateStr: string | null): string {
       .sidebar-post {
         display: flex;
         gap: 0.75rem;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
         text-decoration: none;
         color: inherit;
         align-items: flex-start;
-        padding-bottom: 1.25rem;
-        border-bottom: 1px solid rgb(var(--gray-light));
       }
-      .sidebar-post:last-of-type { border-bottom: none; }
       .sidebar-post:hover .sidebar-post-title { color: var(--accent); }
-      .sidebar-post-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
+      .sidebar-post img {
+        width: 72px;
+        height: 54px;
         object-fit: cover;
+        border-radius: 6px;
         flex-shrink: 0;
-        border: 2px solid rgb(var(--gray-light));
       }
       .sidebar-post-thumb-placeholder {
-        width: 44px;
-        height: 44px;
+        width: 72px;
+        height: 54px;
         background: rgb(var(--gray-light));
-        border-radius: 50%;
+        border-radius: 6px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
-      }
-      .sidebar-post-author {
-        font-size: 0.72rem;
-        color: rgb(var(--gray));
-        margin: 0 0 0.2rem;
-        font-weight: 500;
-      }
-      .sidebar-post-author strong {
-        color: rgb(var(--gray-dark));
-        font-weight: 700;
+        font-size: 1.25rem;
       }
       .sidebar-post-title {
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         font-weight: 600;
         line-height: 1.4;
         color: rgb(var(--black));
@@ -320,7 +306,7 @@ function formatDate(dateStr: string | null): string {
         margin: 0 0 0.2rem;
       }
       .sidebar-post-date {
-        font-size: 0.72rem;
+        font-size: 0.75rem;
         color: rgb(var(--gray));
       }
       .sidebar-more {
@@ -444,19 +430,14 @@ function formatDate(dateStr: string | null): string {
         <aside class="sidebar">
           <h2 class="sidebar-title">Son Blog Yazıları</h2>
           {blogs.map((post) => {
-            const authorPhoto = post.author?.profilePhoto
-              ? resolveMediaUrl(post.author.profilePhoto.url)
-              : null;
+            const thumb = post.featuredImage ? resolveMediaUrl(post.featuredImage.url) : null;
             return (
               <a href={`/blog/${post.slug}`} class="sidebar-post">
-                {authorPhoto
-                  ? <img src={authorPhoto} alt={post.author?.name ?? ''} width={44} height={44} class="sidebar-post-avatar" />
-                  : <div class="sidebar-post-thumb-placeholder">✍️</div>
+                {thumb
+                  ? <img src={thumb} alt={post.featuredImage?.alt ?? post.title} width={72} height={54} />
+                  : <div class="sidebar-post-thumb-placeholder">📝</div>
                 }
                 <div>
-                  {post.author && (
-                    <p class="sidebar-post-author"><strong>{post.author.name}</strong> yazdı</p>
-                  )}
                   <p class="sidebar-post-title">{post.title}</p>
                   {post.publishedAt && (
                     <p class="sidebar-post-date">{formatDate(post.publishedAt)}</p>

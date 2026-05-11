@@ -36,18 +36,8 @@ const authorPhotoUrl = post?.author?.profilePhoto
   ? resolveMediaUrl(post.author.profilePhoto.url)
   : null;
 
-// Author's featuredImage (separate from profilePhoto) — used as SM card image
-const authorFeaturedImageUrl = post?.featuredImage
-  ? resolveMediaUrl(post.featuredImage.url)
-  : null;
-
-// Social media: author photo > author featured image > fallback
-const ogImage = authorPhotoUrl ?? authorFeaturedImageUrl ?? undefined;
-
-// Social meta title: "Author yazdı — Post title"
-const ogTitle = post
-  ? (post.author ? `${post.author.name} yazdı — ${post.title}` : post.title)
-  : 'Blog';
+// Social media card: use author photo for blog posts (brand identity)
+const ogImage = authorPhotoUrl ?? imageUrl ?? undefined;
 const description =
   post?.seo?.metaDescription ?? lexicalToPlainText(post?.body).slice(0, 160);
 const bodyHtml = post ? lexicalToHtml(post.body) : '';
@@ -65,7 +55,7 @@ function formatDate(dateStr: string | null): string {
 <!doctype html>
 <html lang="tr">
   <head>
-    <BaseHead title={ogTitle} description={description} image={ogImage} />
+    <BaseHead title={post?.seo?.metaTitle ?? post?.title ?? 'Blog'} description={description} image={ogImage} />
     <style>
       .page-layout {
         display: grid;

@@ -13,7 +13,7 @@ import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://paraanaliz.com',
   output: 'server',
   adapter: cloudflare(),
   integrations: [mdx(), sitemap(), react()],

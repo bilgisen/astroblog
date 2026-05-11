@@ -210,13 +210,14 @@ export async function fetchBlogList(
 /** Fetch a single blog post by slug */
 export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
   const data = await fetchFromPayload(
-    `/api/blog?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
+    `/api/blog?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
   ) as BlogListResponse;
   return data.docs[0] ?? null;
 }
 
 /**
  * Render Payload Lexical rich-text nodes to HTML string.
+ * Handles: heading, paragraph, text formatting, lists, blockquote, links.
  */
 export function lexicalToHtml(body: unknown): string {
   if (!body || typeof body !== 'object') return '';
@@ -231,7 +232,7 @@ export function lexicalToHtml(body: unknown): string {
       text?: string;
       format?: number;
       children?: unknown[];
-      fields?: { url?: string };
+      fields?: { url?: string; linkType?: string };
     };
 
     if (n.type === 'text') {

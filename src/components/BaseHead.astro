@@ -10,17 +10,27 @@ import { Font } from 'astro:assets';
 interface Props {
 	title: string;
 	description: string;
-	image?: ImageMetadata;
-	// Optional: pass a full absolute URL to override the OG image (for SSR pages)
-	ogImageUrl?: string;
+	// Accept either a local ImageMetadata (static imports) or a full URL string
+	image?: ImageMetadata | string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = FallbackImage, ogImageUrl } = Astro.props;
+const { title, description, image = FallbackImage } = Astro.props;
 
-// Use explicit ogImageUrl if provided, otherwise fall back to local image
-const resolvedOgImage = ogImageUrl ?? new URL(image.src, Astro.url).toString();
+// Resolve to an absolute URL string for OG/Twitter tags
+function resolveImageUrl(img: ImageMetadata | string): string {
+	if (typeof img === 'string') {
+		// Already a full URL
+		if (img.startsWith('http')) return img;
+		// Relative path — make absolute
+		return new URL(img, Astro.site ?? Astro.url).toString();
+	}
+	// Local ImageMetadata — use .src relative to site
+	return new URL(img.src, Astro.url).toString();
+}
+
+const ogImageUrl = resolveImageUrl(image);
 ---
 
 <!-- Global Metadata -->
@@ -52,11 +62,11 @@ const resolvedOgImage = ogImageUrl ?? new URL(image.src, Astro.url).toString();
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={resolvedOgImage} />
+<meta property="og:image" content={ogImageUrl} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={resolvedOgImage} />
+<meta property="twitter:image" content={ogImageUrl} />
