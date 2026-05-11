@@ -112,11 +112,21 @@ export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
 
 /**
  * Resolve the full image URL.
- * Payload stores relative paths like /api/media/file/xxx.jpg
+ * In production, proxies through /media/ endpoint so OG images
+ * are served from the frontend domain (paraanaliz.com) instead of
+ * paback.paraanaliz.workers.dev — required for social media crawlers.
  */
 export function resolveMediaUrl(url: string): string {
-  if (url.startsWith('http')) return url;
-  return `${PUBLIC_API_URL}${url}`;
+  if (!url) return '';
+  // Already a full external URL (not Payload relative)
+  if (url.startsWith('http') && !url.includes('paback.paraanaliz.workers.dev')) {
+    return url;
+  }
+  // Payload relative path: /api/media/file/xxx.jpg
+  const path = url.startsWith('/') ? url.slice(1) : url;
+  // Strip the paback domain if present
+  const cleanPath = path.replace('https://paback.paraanaliz.workers.dev/', '');
+  return `/media/${cleanPath}`;
 }
 
 /**
