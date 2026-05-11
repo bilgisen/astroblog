@@ -2,7 +2,7 @@
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
-import { fetchNewsBySlug, resolveMediaUrl, lexicalToPlainText } from '../../lib/payload';
+import { fetchNewsBySlug, resolveMediaUrl, lexicalToPlainText, lexicalToHtml } from '../../lib/payload';
 import type { NewsItem } from '../../lib/payload';
 
 // SSR mode — no getStaticPaths needed, every request fetches live data
@@ -21,61 +21,6 @@ try {
 
 const imageUrl = news?.featuredImage ? resolveMediaUrl(news.featuredImage.url) : null;
 const description = news?.seo?.metaDescription ?? lexicalToPlainText(news?.body).slice(0, 160);
-
-/**
- * Render Payload Lexical rich-text nodes to HTML string.
- * Handles: heading (h1–h6), paragraph, text (bold, italic, underline).
- */
-function lexicalToHtml(body: unknown): string {
-  if (!body || typeof body !== 'object') return '';
-  const root = (body as { root?: { children?: unknown[] } }).root;
-  if (!root?.children) return '';
-
-  function renderNode(node: unknown): string {
-    if (!node || typeof node !== 'object') return '';
-    const n = node as {
-      type?: string;
-      tag?: string;
-      text?: string;
-      format?: number;
-      children?: unknown[];
-    };
-
-    if (n.type === 'text') {
-      let text = n.text ?? '';
-      // format bitmask: 1=bold, 2=italic, 4=strikethrough, 8=underline, 16=code, 32=subscript, 64=superscript
-      if (n.format && n.format & 1) text = `<strong>${text}</strong>`;
-      if (n.format && n.format & 2) text = `<em>${text}</em>`;
-      if (n.format && n.format & 8) text = `<u>${text}</u>`;
-      if (n.format && n.format & 16) text = `<code>${text}</code>`;
-      return text;
-    }
-
-    const inner = n.children ? n.children.map(renderNode).join('') : '';
-
-    switch (n.type) {
-      case 'heading':
-        return `<${n.tag}>${inner}</${n.tag}>`;
-      case 'paragraph':
-        return `<p>${inner}</p>`;
-      case 'list':
-        return `<ul>${inner}</ul>`;
-      case 'listitem':
-        return `<li>${inner}</li>`;
-      case 'quote':
-        return `<blockquote>${inner}</blockquote>`;
-      case 'link': {
-        const l = n as unknown as { fields?: { url?: string } };
-        const href = l.fields?.url ?? '#';
-        return `<a href="${href}">${inner}</a>`;
-      }
-      default:
-        return inner;
-    }
-  }
-
-  return root.children.map(renderNode).join('\n');
-}
 
 const bodyHtml = news ? lexicalToHtml(news.body) : '';
 ---
@@ -132,6 +77,23 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
       .prose h2 { font-size: 1.75rem; margin: 1.5rem 0 0.75rem; }
       .prose h3 { font-size: 1.4rem; margin: 1.25rem 0 0.5rem; }
       .prose p  { margin-bottom: 1.25rem; line-height: 1.8; }
+      /* YouTube embed */
+      .prose :global(.yt-embed) {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%; /* 16:9 */
+        margin: 1.5rem 0;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+      }
+      .prose :global(.yt-embed iframe) {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        border: 0;
+        border-radius: 10px;
+      }
       .back-link {
         display: inline-block;
         margin-bottom: 2rem;

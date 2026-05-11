@@ -228,8 +228,41 @@ export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
 }
 
 /**
+ * Extract YouTube video ID from various YouTube URL formats:
+ * - https://youtu.be/VIDEO_ID
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtube.com/watch?v=VIDEO_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
+ * Returns null if not a YouTube URL.
+ */
+function getYouTubeEmbedId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    // youtu.be/VIDEO_ID
+    if (u.hostname === 'youtu.be') {
+      const id = u.pathname.slice(1).split('?')[0];
+      return id || null;
+    }
+    // youtube.com/watch?v=VIDEO_ID
+    if (u.hostname.includes('youtube.com')) {
+      if (u.pathname === '/watch') {
+        return u.searchParams.get('v');
+      }
+      // youtube.com/embed/VIDEO_ID
+      if (u.pathname.startsWith('/embed/')) {
+        return u.pathname.split('/embed/')[1].split('?')[0] || null;
+      }
+    }
+  } catch {
+    // invalid URL
+  }
+  return null;
+}
+
+/**
  * Render Payload Lexical rich-text nodes to HTML string.
  * Handles: heading, paragraph, text formatting, lists, blockquote, links.
+ * YouTube links are rendered as responsive embedded iframes.
  */
 export function lexicalToHtml(body: unknown): string {
   if (!body || typeof body !== 'object') return '';
@@ -267,6 +300,18 @@ export function lexicalToHtml(body: unknown): string {
       case 'link':
       case 'autolink': {
         const href = n.fields?.url ?? '#';
+        // Check if this is a YouTube link — render as embed
+        const ytId = getYouTubeEmbedId(href);
+        if (ytId) {
+          return `<div class="yt-embed"><iframe
+            src="https://www.youtube.com/embed/${ytId}"
+            title="YouTube video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+          ></iframe></div>\n`;
+        }
         return `<a href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
       }
       default: return inner;
