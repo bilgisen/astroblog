@@ -88,9 +88,12 @@ export async function fetchNewsList(
   page = 1,
   limit = 20
 ): Promise<NewsListResponse> {
-  return fetchFromPayload(
+  const data = await fetchFromPayload(
     `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`
-  ) as Promise<NewsListResponse>;
+  ) as NewsListResponse;
+  // Normalize slugs in response
+  data.docs = data.docs.map(item => ({ ...item, slug: normalizeSlug(item.slug) }));
+  return data;
 }
 
 /** Fetch a single news article by ID */
@@ -102,10 +105,31 @@ export async function fetchNewsById(id: number): Promise<NewsItem> {
 
 /** Fetch a single news article by slug */
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
+  // Try both original and normalized slug
+  const normalized = normalizeSlug(slug);
   const data = await fetchFromPayload(
-    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
+    `/api/news?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
   ) as NewsListResponse;
-  return data.docs[0] ?? null;
+  if (data.docs[0]) return { ...data.docs[0], slug: normalized };
+  // Fallback: try with normalized slug
+  const data2 = await fetchFromPayload(
+    `/api/news?where[slug][equals]=${encodeURIComponent(normalized)}&depth=2&draft=true&trash=false&limit=1`
+  ) as NewsListResponse;
+  return data2.docs[0] ? { ...data2.docs[0], slug: normalized } : null;
+}
+
+/**
+ * Normalize Turkish characters in slugs for clean URLs.
+ * ş→s, ğ→g, ü→u, ö→o, ı→i, İ→I, Ş→S, Ğ→G, Ü→U, Ö→O, Ç→C, ç→c
+ */
+export function normalizeSlug(slug: string): string {
+  return slug
+    .replace(/ş/g, 's').replace(/Ş/g, 'S')
+    .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+    .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+    .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+    .replace(/ı/g, 'i').replace(/İ/g, 'I')
+    .replace(/ç/g, 'c').replace(/Ç/g, 'C');
 }
 
 /**
@@ -202,17 +226,26 @@ export async function fetchBlogList(
   page = 1,
   limit = 10
 ): Promise<BlogListResponse> {
-  return fetchFromPayload(
+  const data = await fetchFromPayload(
     `/api/blog?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt`
-  ) as Promise<BlogListResponse>;
+  ) as BlogListResponse;
+  // Normalize slugs in response
+  data.docs = data.docs.map(item => ({ ...item, slug: normalizeSlug(item.slug) }));
+  return data;
 }
 
 /** Fetch a single blog post by slug */
 export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
+  const normalized = normalizeSlug(slug);
   const data = await fetchFromPayload(
-    `/api/blog?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
+    `/api/blog?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
   ) as BlogListResponse;
-  return data.docs[0] ?? null;
+  if (data.docs[0]) return { ...data.docs[0], slug: normalized };
+  // Fallback: try with normalized slug
+  const data2 = await fetchFromPayload(
+    `/api/blog?where[slug][equals]=${encodeURIComponent(normalized)}&depth=2&draft=true&trash=false&limit=1`
+  ) as BlogListResponse;
+  return data2.docs[0] ? { ...data2.docs[0], slug: normalized } : null;
 }
 
 /**
