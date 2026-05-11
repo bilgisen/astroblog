@@ -35,6 +35,9 @@ const imageUrl = post?.featuredImage ? resolveMediaUrl(post.featuredImage.url) :
 const authorPhotoUrl = post?.author?.profilePhoto
   ? resolveMediaUrl(post.author.profilePhoto.url)
   : null;
+
+// Social media card: use author photo for blog posts (brand identity)
+const ogImage = authorPhotoUrl ?? imageUrl ?? undefined;
 const description =
   post?.seo?.metaDescription ?? lexicalToPlainText(post?.body).slice(0, 160);
 const bodyHtml = post ? lexicalToHtml(post.body) : '';
@@ -52,7 +55,7 @@ function formatDate(dateStr: string | null): string {
 <!doctype html>
 <html lang="tr">
   <head>
-    <BaseHead title={post?.seo?.metaTitle ?? post?.title ?? 'Blog'} description={description} />
+    <BaseHead title={post?.seo?.metaTitle ?? post?.title ?? 'Blog'} description={description} image={ogImage} />
     <style>
       .page-layout {
         display: grid;

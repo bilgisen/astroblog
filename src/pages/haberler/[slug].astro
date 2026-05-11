@@ -86,6 +86,7 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
     <BaseHead
       title={news?.title ?? 'Haber'}
       description={description}
+      image={imageUrl ?? undefined}
     />
     <style>
       .hero-image {
