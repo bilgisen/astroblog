@@ -88,12 +88,9 @@ export async function fetchNewsList(
   page = 1,
   limit = 20
 ): Promise<NewsListResponse> {
-  const data = await fetchFromPayload(
+  return fetchFromPayload(
     `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`
-  ) as NewsListResponse;
-  // Normalize slugs in response
-  data.docs = data.docs.map(item => ({ ...item, slug: normalizeSlug(item.slug) }));
-  return data;
+  ) as Promise<NewsListResponse>;
 }
 
 /** Fetch a single news article by ID */
@@ -105,31 +102,10 @@ export async function fetchNewsById(id: number): Promise<NewsItem> {
 
 /** Fetch a single news article by slug */
 export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
-  // Normalize the incoming slug first (handles Turkish chars in URL)
-  const normalized = normalizeSlug(decodeURIComponent(slug));
-  // Query with the original slug from Payload (un-normalized)
-  // We fetch all and find by normalized comparison
   const data = await fetchFromPayload(
-    `/api/news?depth=2&draft=true&trash=false&limit=100`
+    `/api/news?where[slug][equals]=${slug}&depth=2&draft=true&trash=false&limit=1`
   ) as NewsListResponse;
-  const match = data.docs.find(
-    item => normalizeSlug(item.slug) === normalized
-  );
-  return match ? { ...match, slug: normalized } : null;
-}
-
-/**
- * Normalize Turkish characters in slugs for clean URLs.
- * ş→s, ğ→g, ü→u, ö→o, ı→i, İ→I, Ş→S, Ğ→G, Ü→U, Ö→O, Ç→C, ç→c
- */
-export function normalizeSlug(slug: string): string {
-  return slug
-    .replace(/ş/g, 's').replace(/Ş/g, 'S')
-    .replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
-    .replace(/ü/g, 'u').replace(/Ü/g, 'U')
-    .replace(/ö/g, 'o').replace(/Ö/g, 'O')
-    .replace(/ı/g, 'i').replace(/İ/g, 'I')
-    .replace(/ç/g, 'c').replace(/Ç/g, 'C');
+  return data.docs[0] ?? null;
 }
 
 /**
@@ -226,29 +202,21 @@ export async function fetchBlogList(
   page = 1,
   limit = 10
 ): Promise<BlogListResponse> {
-  const data = await fetchFromPayload(
+  return fetchFromPayload(
     `/api/blog?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt`
-  ) as BlogListResponse;
-  // Normalize slugs in response
-  data.docs = data.docs.map(item => ({ ...item, slug: normalizeSlug(item.slug) }));
-  return data;
+  ) as Promise<BlogListResponse>;
 }
 
 /** Fetch a single blog post by slug */
 export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
-  const normalized = normalizeSlug(decodeURIComponent(slug));
   const data = await fetchFromPayload(
-    `/api/blog?depth=2&draft=true&trash=false&limit=100`
+    `/api/blog?where[slug][equals]=${encodeURIComponent(slug)}&depth=2&draft=true&trash=false&limit=1`
   ) as BlogListResponse;
-  const match = data.docs.find(
-    item => normalizeSlug(item.slug) === normalized
-  );
-  return match ? { ...match, slug: normalized } : null;
+  return data.docs[0] ?? null;
 }
 
 /**
  * Render Payload Lexical rich-text nodes to HTML string.
- * Handles: heading, paragraph, text formatting, lists, blockquote, links.
  */
 export function lexicalToHtml(body: unknown): string {
   if (!body || typeof body !== 'object') return '';
@@ -263,7 +231,7 @@ export function lexicalToHtml(body: unknown): string {
       text?: string;
       format?: number;
       children?: unknown[];
-      fields?: { url?: string; linkType?: string };
+      fields?: { url?: string };
     };
 
     if (n.type === 'text') {

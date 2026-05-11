@@ -10,27 +10,17 @@ import { Font } from 'astro:assets';
 interface Props {
 	title: string;
 	description: string;
-	// Accept either a local ImageMetadata (static imports) or a full URL string
-	image?: ImageMetadata | string;
+	image?: ImageMetadata;
+	// Optional: pass a full absolute URL to override the OG image (for SSR pages)
+	ogImageUrl?: string;
 }
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = FallbackImage } = Astro.props;
+const { title, description, image = FallbackImage, ogImageUrl } = Astro.props;
 
-// Resolve to an absolute URL string for OG/Twitter tags
-function resolveImageUrl(img: ImageMetadata | string): string {
-	const base = Astro.site ?? Astro.url;
-	if (typeof img === 'string') {
-		if (img.startsWith('http')) return img;
-		return new URL(img, base).toString();
-	}
-	return new URL(img.src, base).toString();
-}
-
-const ogImageUrl = resolveImageUrl(image);
-
-const rssUrl = Astro.site ? new URL('rss.xml', Astro.site).toString() : null;
+// Use explicit ogImageUrl if provided, otherwise fall back to local image
+const resolvedOgImage = ogImageUrl ?? new URL(image.src, Astro.url).toString();
 ---
 
 <!-- Global Metadata -->
@@ -39,14 +29,12 @@ const rssUrl = Astro.site ? new URL('rss.xml', Astro.site).toString() : null;
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
-{rssUrl && (
-	<link
-		rel="alternate"
-		type="application/rss+xml"
-		title={SITE_TITLE}
-		href={rssUrl}
-	/>
-)}
+<link
+	rel="alternate"
+	type="application/rss+xml"
+	title={SITE_TITLE}
+	href={new URL('rss.xml', Astro.site)}
+/>
 <meta name="generator" content={Astro.generator} />
 
 <Font cssVariable="--font-atkinson" preload />
@@ -64,11 +52,11 @@ const rssUrl = Astro.site ? new URL('rss.xml', Astro.site).toString() : null;
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image" content={resolvedOgImage} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={ogImageUrl} />
+<meta property="twitter:image" content={resolvedOgImage} />

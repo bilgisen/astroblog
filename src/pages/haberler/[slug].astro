@@ -22,6 +22,11 @@ try {
 const imageUrl = news?.featuredImage ? resolveMediaUrl(news.featuredImage.url) : null;
 const description = news?.seo?.metaDescription ?? lexicalToPlainText(news?.body).slice(0, 160);
 
+// SM card image: featured image if available, else site logo
+const PUBLIC_API_URL = import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
+const fallbackOgImage = new URL('/paraanaliz.png', Astro.url).toString();
+const ogImageUrl = imageUrl ?? fallbackOgImage;
+
 /**
  * Render Payload Lexical rich-text nodes to HTML string.
  * Handles: heading (h1–h6), paragraph, text (bold, italic, underline).
@@ -86,7 +91,7 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
     <BaseHead
       title={news?.title ?? 'Haber'}
       description={description}
-      image={imageUrl ?? undefined}
+      ogImageUrl={ogImageUrl}
     />
     <style>
       .hero-image {
