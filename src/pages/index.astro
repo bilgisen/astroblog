@@ -34,6 +34,23 @@ function formatDate(dateStr: string | null): string {
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
     <style>
+      /* ── Sponsor Banner ── */
+      .sponsor-banner {
+        display: block;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        line-height: 0;
+      }
+      .sponsor-banner img {
+        max-width: 970px;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        display: inline-block;
+      }
+
       /* ── CTA Banner ── */
       .cta-banner {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -332,6 +349,16 @@ function formatDate(dateStr: string | null): string {
   <body>
     <Header />
     <main>
+      <!-- Sponsor Banner -->
+      <a href="https://gedik.com/" target="_blank" rel="noopener noreferrer" class="sponsor-banner">
+        <img
+          src={resolveMediaUrl('/api/media/file/gedik.jpg')}
+          alt="Gedik Yatırım"
+          width="970"
+          height="90"
+        />
+      </a>
+
       <!-- CTA Banner -->
       <div class="cta-banner">
         <div class="rocket">🚀</div>
