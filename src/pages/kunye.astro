@@ -1,0 +1,96 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="tr">
+	<head>
+		<BaseHead title={`Künye - ${SITE_TITLE}`} description="Para Analiz Künye ve İletişim Bilgileri" />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 3rem 1rem;
+				color: var(--foreground);
+			}
+			h1 {
+				font-size: 2.5rem;
+				font-weight: 800;
+				margin-bottom: 2rem;
+				letter-spacing: -0.04em;
+			}
+			.kunye-grid {
+				display: grid;
+				gap: 2rem;
+			}
+			.kunye-item h2 {
+				font-size: 0.85rem;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				color: var(--primary);
+				margin-bottom: 0.25rem;
+				font-weight: 800;
+			}
+			.kunye-item p {
+				font-size: 1.1rem;
+				font-weight: 600;
+				margin: 0;
+			}
+			.contact-info {
+				margin-top: 3rem;
+				padding-top: 2rem;
+				border-top: 1px solid var(--border);
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Künye</h1>
+			
+			<div class="kunye-grid">
+				<div class="kunye-item">
+					<h2>İmtiyaz Sahibi / Grantee</h2>
+					<p>Cüneyt AKMAN</p>
+				</div>
+
+				<div class="kunye-item">
+					<h2>Genel Yayın Yönetmeni / Editor in Chief</h2>
+					<p>Atilla YEŞİLADA</p>
+				</div>
+
+				<div class="kunye-item">
+					<h2>Haber Müdürü / Senior Editor</h2>
+					<p>Caner Taşdemir</p>
+				</div>
+
+				<div class="kunye-item">
+					<h2>Hukuk Danışmanı / Jurisconsult</h2>
+					<p>Güncelleniyor</p>
+				</div>
+
+				<div class="kunye-item">
+					<h2>Mali Müşavir / Financial Advisor</h2>
+					<p>Sabri Karakaşlıoğlu</p>
+				</div>
+
+				<div class="kunye-item">
+					<h2>Reklam / Advertise</h2>
+					<p>reklam@paraanaliz.com</p>
+				</div>
+			</div>
+
+			<div class="contact-info">
+				<div class="kunye-item">
+					<h2>İletişim / Contact</h2>
+					<p>info@paraanaliz.com</p>
+				</div>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

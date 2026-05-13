@@ -1,0 +1,91 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<!doctype html>
+<html lang="tr">
+	<head>
+		<BaseHead title={`Gizlilik ve KVKK - ${SITE_TITLE}`} description="Para Analiz Gizlilik Politikası ve Aydınlatma Metni" />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 3rem 1rem;
+				color: var(--foreground);
+				line-height: 1.8;
+			}
+			h1 {
+				font-size: 2.5rem;
+				font-weight: 800;
+				margin-bottom: 2rem;
+				letter-spacing: -0.04em;
+			}
+			h2 {
+				font-size: 1.5rem;
+				font-weight: 700;
+				margin: 2rem 0 1rem;
+				color: var(--primary);
+			}
+			p, li {
+				font-size: 1.05rem;
+				margin-bottom: 1.25rem;
+				color: var(--muted-foreground);
+			}
+			ul {
+				padding-left: 1.5rem;
+				margin-bottom: 1.5rem;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Gizlilik Politikası ve Aydınlatma Metni</h1>
+			
+			<section>
+				<h2>1. Veri Sorumlusu</h2>
+				<p>6698 Sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla <strong>Para Analiz</strong> tarafından aşağıda açıklanan kapsamda işlenebilecektir.</p>
+			</section>
+
+			<section>
+				<h2>2. Verilerin İşlenme Amaçları</h2>
+				<p>Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:</p>
+				<ul>
+					<li>Sunulan ürün ve hizmet kalitesinin artırılması,</li>
+					<li>Bülten aboneliği süreçlerinin yürütülmesi ve bilgilendirmelerin yapılması,</li>
+					<li>Kullanıcı ihtiyaçlarına göre kişiselleştirilmiş içerik sunumu,</li>
+					<li>Bilgi güvenliği süreçlerinin yürütülmesi,</li>
+					<li>Yasal yükümlülüklerin yerine getirilmesi.</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>3. Veri İşleme İlkeleri</h2>
+				<p>Verileriniz; hukuka ve dürüstlük kurallarına uygun, güncel, belirli ve meşru amaçlar için, işlendikleri amaçla bağlantılı, sınırlı ve ölçülü olarak muhafaza edilmektedir.</p>
+			</section>
+
+			<section>
+				<h2>4. Veri Sahibi Hakları</h2>
+				<p>KVKK’nın 11. maddesi uyarınca veri sahipleri şu haklara sahiptir:</p>
+				<ul>
+					<li>Kişisel verilerin işlenip işlenmediğini öğrenme,</li>
+					<li>İşlenmişse bilgi talep etme,</li>
+					<li>İşlenme amacına uygun kullanılıp kullanılmadığını öğrenme,</li>
+					<li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme,</li>
+					<li>Eksik veya yanlış işlenmişse düzeltilmesini isteme,</li>
+					<li>Verilerin silinmesini veya yok edilmesini talep etme.</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>5. İletişim ve Başvuru</h2>
+				<p>Taleplerinizi yazılı olarak veya kayıtlı e-posta adresiniz üzerinden <strong>info@paraanaliz.com</strong> adresine iletebilirsiniz. Başvurularınız en geç 30 gün içinde sonuçlandırılacaktır.</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

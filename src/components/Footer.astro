@@ -26,6 +26,23 @@ const today = new Date();
 		</a>
 	</div>
 	<p class="copyright">&copy; {today.getFullYear()} Para Analiz. Tüm hakları saklıdır.</p>
+	
+	<div class="sub-footer">
+		<div class="sub-footer-col">
+			<nav class="sub-nav">
+				<a href="/kunye">Künye</a>
+				<a href="/kunye#contact">İletişim</a>
+				<a href="/kunye#advertise">Reklam</a>
+			</nav>
+		</div>
+		<div class="sub-footer-col">
+			<nav class="sub-nav">
+				<a href="/gizlilik">Gizlilik Politikası</a>
+				<a href="/gizlilik">Aydınlatma Metni</a>
+			</nav>
+		</div>
+	</div>
+
 	<ThemeToggle />
 </footer>
 
@@ -65,8 +82,39 @@ const today = new Date();
 	}
 	.copyright {
 		font-size: 0.85rem;
-		margin: 0;
+		margin: 0 0 2rem;
 		color: var(--muted-foreground);
 		opacity: 0.8;
+	}
+	.sub-footer {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+		max-width: 600px;
+		margin: 0 auto 3rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--border);
+	}
+	.sub-nav {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		align-items: center;
+	}
+	.sub-nav a {
+		font-size: 0.85rem;
+		color: var(--muted-foreground);
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+	.sub-nav a:hover {
+		color: var(--primary);
+	}
+
+	@media (max-width: 600px) {
+		.sub-footer {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
 	}
 </style>
