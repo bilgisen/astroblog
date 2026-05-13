@@ -193,9 +193,42 @@ function formatDate(dateStr: string | null): string {
         margin-bottom: 2rem;
       }
 
+      /* ── Organic Feed (Mobile) ── */
       @media (max-width: 768px) {
         .small-grid, .load-more-grid {
           grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        .small-card {
+          border: none !important;
+          background: transparent !important;
+          padding: 0 0 2rem 0 !important;
+          border-bottom: 1px solid var(--border) !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+        .small-card:last-child {
+          border-bottom: none !important;
+        }
+        .small-card:not(:first-child) img {
+          display: none; /* Hide images for non-first items on mobile for extra clean look */
+        }
+        .small-card:not(:first-child) .card-body {
+          padding: 0;
+        }
+        .small-card h3 {
+          font-size: 1.125rem;
+          margin-bottom: 0.5rem;
+        }
+        /* Highlight first item */
+        .small-grid .small-card:first-child h3 {
+          font-size: 1.5rem;
+          line-height: 1.2;
+        }
+        .small-grid .small-card:first-child img {
+          display: block;
+          border-radius: 12px;
+          margin-bottom: 1rem;
         }
       }
 

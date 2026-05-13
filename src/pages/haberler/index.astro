@@ -116,9 +116,38 @@ try {
         border-radius: 8px; 
         background: var(--muted);
       }
-      @media (max-width: 640px) {
+      @media (max-width: 768px) {
         .news-grid {
           grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        .news-card {
+          border: none !important;
+          background: transparent !important;
+          padding: 0 0 2rem 0 !important;
+          border-bottom: 1px solid var(--border) !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+        .news-card:last-child {
+          border-bottom: none !important;
+        }
+        .news-card:not(:first-child) img {
+          display: none;
+        }
+        .news-card-body {
+          padding: 0 !important;
+          margin-top: 1rem;
+        }
+        .news-card:not(:first-child) .news-card-body {
+          margin-top: 0;
+        }
+        .news-card h2 {
+          font-size: 1.25rem;
+          margin-bottom: 0.5rem;
+        }
+        .news-grid .news-card:first-child h2 {
+          font-size: 1.5rem;
         }
       }
     </style>

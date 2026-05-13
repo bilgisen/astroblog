@@ -128,9 +128,38 @@ function formatDate(dateStr: string | null): string {
         border-radius: 8px; 
         background: var(--muted);
       }
-      @media (max-width: 640px) {
+      @media (max-width: 768px) {
         .blog-grid {
           grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        .blog-card {
+          border: none !important;
+          background: transparent !important;
+          padding: 0 0 2rem 0 !important;
+          border-bottom: 1px solid var(--border) !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+        .blog-card:last-child {
+          border-bottom: none !important;
+        }
+        .blog-card:not(:first-child) img {
+          display: none;
+        }
+        .blog-card-body {
+          padding: 0 !important;
+          margin-top: 1rem;
+        }
+        .blog-card:not(:first-child) .blog-card-body {
+          margin-top: 0;
+        }
+        .blog-card h2 {
+          font-size: 1.25rem;
+          margin-bottom: 0.5rem;
+        }
+        .blog-grid .blog-card:first-child h2 {
+          font-size: 1.5rem;
         }
       }
     </style>
