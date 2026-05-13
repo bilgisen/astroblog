@@ -6,12 +6,12 @@ const today = new Date();
 	<p class="tagline">Ekonomi gündemi ve uzmanlardan analizler.</p>
 	<div class="social-links">
 		<!-- X (Twitter) -->
-		<a href="https://twitter.com/paranaliz" target="_blank" rel="noopener noreferrer">
+		<a href="https://twitter.com/paraanaliz" target="_blank" rel="noopener noreferrer">
 			<span class="sr-only">Para Analiz X (Twitter)</span>
 			<svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
 				<path fill="currentColor" d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/>
 			</svg>
-			<span>@paranaliz</span>
+			<span>@paraanaliz</span>
 		</a>
 		<!-- YouTube -->
 		<a href="https://www.youtube.com/channel/UCURPZbLYwqxOtqmkbMfhYOw" target="_blank" rel="noopener noreferrer">
@@ -27,38 +27,42 @@ const today = new Date();
 
 <style>
 	footer {
-		padding: 3em 1em 4em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat;
-		color: rgb(var(--gray));
+		padding: 4rem 1.5rem;
+		background: var(--card);
+		color: var(--muted-foreground);
 		text-align: center;
+		border-top: 1px solid var(--border);
 	}
 	.tagline {
-		font-size: 1rem;
-		margin: 0 0 1.25em;
-		color: rgb(var(--gray-dark));
-		font-weight: 500;
+		font-size: 1.1rem;
+		margin: 0 0 1.5rem;
+		color: var(--foreground);
+		font-weight: 600;
+		letter-spacing: -0.01em;
 	}
 	.social-links {
 		display: flex;
 		justify-content: center;
-		gap: 1.5em;
-		margin-bottom: 1.25em;
+		gap: 2rem;
+		margin-bottom: 2rem;
 	}
 	.social-links a {
 		display: flex;
 		align-items: center;
-		gap: 0.4em;
+		gap: 0.5rem;
 		text-decoration: none;
-		color: rgb(var(--gray));
-		font-size: 0.9rem;
-		transition: color 0.2s;
+		color: var(--muted-foreground);
+		font-size: 0.95rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
 	}
 	.social-links a:hover {
-		color: var(--accent);
+		color: var(--primary);
 	}
 	.copyright {
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 		margin: 0;
-		color: rgb(var(--gray));
+		color: var(--muted-foreground);
+		opacity: 0.8;
 	}
 </style>

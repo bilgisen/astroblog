@@ -7,6 +7,8 @@ import HeaderLink from './HeaderLink.astro';
 	<nav>
 		<h2><a href="/">{SITE_TITLE}</a></h2>
 		<div class="internal-links">
+			<HeaderLink href="/">Anasayfa</HeaderLink>
+			<HeaderLink href="/blog">Blog</HeaderLink>
 		</div>
 		<div class="social-links">
 			<!-- X (Twitter) -->
@@ -38,48 +40,70 @@ import HeaderLink from './HeaderLink.astro';
 <style>
 	header {
 		margin: 0;
-		padding: 0 1em;
-		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
+		padding: 0 1.5rem;
+		background: rgba(255, 255, 255, 0.8);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 	}
 	h2 {
 		margin: 0;
-		font-size: 1.1em;
-		font-weight: 700;
+		font-size: 1.5rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 	}
 	h2 a,
 	h2 a.active {
 		text-decoration: none;
-		color: var(--accent);
+		color: var(--primary);
 	}
 	nav {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		max-width: 1200px;
+		margin: 0 auto;
+		height: 4rem;
 	}
 	nav a {
-		padding: 1em 0.5em;
-		color: rgb(var(--black));
-		border-bottom: 4px solid transparent;
+		padding: 0.5rem 1rem;
+		color: var(--foreground);
 		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.95rem;
+		transition: all 0.2s ease;
+		border-radius: 8px;
+	}
+	nav a:hover {
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--primary);
 	}
 	nav a.active {
-		text-decoration: none;
-		border-bottom-color: var(--accent);
+		color: var(--primary);
+		background: oklch(from var(--primary) l c h / 0.1);
 	}
 	.social-links {
 		display: flex;
 		align-items: center;
-		gap: 0.25em;
+		gap: 0.75rem;
 	}
 	.social-links a {
 		display: flex;
 		align-items: center;
-		color: rgb(var(--gray));
-		transition: color 0.2s;
+		justify-content: center;
+		color: var(--muted-foreground);
+		transition: all 0.2s ease;
+		padding: 0.5rem;
+		border-radius: 50%;
 	}
 	.social-links a:hover {
-		color: var(--accent);
+		color: var(--primary);
+		background: rgba(0, 0, 0, 0.05);
+		transform: scale(1.1);
 	}
 	@media (max-width: 720px) {
 		.social-links {
