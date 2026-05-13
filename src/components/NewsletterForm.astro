@@ -172,32 +172,37 @@
     const email = formData.get('email');
 
     btn.disabled = true;
+    const originalContent = btn.innerHTML;
     btn.innerHTML = 'İşleniyor...';
     messageEl.textContent = '';
+    messageEl.className = 'form-message';
 
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         body: JSON.stringify({ email }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        messageEl.textContent = 'Aboneliğiniz başarıyla oluşturuldu!';
-        messageEl.className = 'form-message success';
+        messageEl.textContent = 'Harika! Bültenimize başarıyla kayıt oldunuz.';
+        messageEl.classList.add('success');
         form.reset();
       } else {
-        messageEl.textContent = data.error || 'Bir hata oluştu.';
-        messageEl.className = 'form-message error';
+        messageEl.textContent = data.error || 'Kayıt sırasında bir hata oluştu.';
+        messageEl.classList.add('error');
       }
     } catch (err) {
-      messageEl.textContent = 'Sunucuyla bağlantı kurulamadı.';
-      messageEl.className = 'form-message error';
+      messageEl.textContent = 'Sunucuyla bağlantı kurulamadı. Lütfen tekrar deneyin.';
+      messageEl.classList.add('error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<span>Abone Ol</span><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+      btn.innerHTML = originalContent;
     }
   });
 </script>

@@ -203,7 +203,7 @@ function formatDate(dateStr: string | null): string {
         .small-card {
           border: none !important;
           background: transparent !important;
-          padding: 0 0 2rem 0 !important;
+          padding: 0 0 3rem 0 !important;
           border-bottom: 1px solid var(--border) !important;
           border-radius: 0 !important;
           box-shadow: none !important;
@@ -211,27 +211,18 @@ function formatDate(dateStr: string | null): string {
         .small-card:last-child {
           border-bottom: none !important;
         }
-        .small-card:not(:first-child) img {
-          display: none; /* Hide images for non-first items on mobile for extra clean look */
+        .small-card img {
+          display: block !important;
+          border-radius: 12px;
+          margin-bottom: 1.25rem;
         }
-        .small-card:not(:first-child) .card-body {
-          padding: 0;
+        .small-card-body {
+          padding: 0 !important;
         }
         .small-card h3 {
-          font-size: 1.1rem;
-          margin-bottom: 0.5rem;
-          line-height: 1.4;
-        }
-        /* Highlight first item */
-        .small-grid .small-card:first-child h3 {
-          font-size: 1.375rem;
-          line-height: 1.25;
-          margin-top: 0.5rem;
-        }
-        .small-grid .small-card:first-child img {
-          display: block;
-          border-radius: 12px;
-          margin-bottom: 1rem;
+          font-size: 1.5rem !important;
+          line-height: 1.2;
+          margin-bottom: 0.75rem;
         }
       }
 

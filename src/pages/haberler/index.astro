@@ -9,7 +9,7 @@ let news: NewsItem[] = [];
 let error: string | null = null;
 
 try {
-  const data = await fetchNewsList(1, 20);
+  const data = await fetchNewsList(1, 100); // Fetch a larger batch for client-side load more
   news = data.docs;
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
@@ -109,6 +109,29 @@ try {
         font-weight: 700;
         color: var(--foreground);
       }
+      .load-more-btn {
+        display: block;
+        width: fit-content;
+        margin: 4rem auto;
+        padding: 1rem 2.5rem;
+        background: var(--primary);
+        color: white;
+        border-radius: 99px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .load-more-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+      .load-more-btn.hidden {
+        display: none;
+      }
+
       .error-message {
         color: var(--destructive); 
         padding: 1rem;
@@ -119,12 +142,12 @@ try {
       @media (max-width: 768px) {
         .news-grid {
           grid-template-columns: 1fr;
-          gap: 2rem;
+          gap: 3rem;
         }
         .news-card {
           border: none !important;
           background: transparent !important;
-          padding: 0 0 2rem 0 !important;
+          padding: 0 0 3rem 0 !important;
           border-bottom: 1px solid var(--border) !important;
           border-radius: 0 !important;
           box-shadow: none !important;
@@ -132,22 +155,18 @@ try {
         .news-card:last-child {
           border-bottom: none !important;
         }
-        .news-card:not(:first-child) img {
-          display: none;
+        .news-card img {
+          display: block !important;
+          border-radius: 12px;
+          margin-bottom: 1.25rem;
         }
         .news-card-body {
           padding: 0 !important;
-          margin-top: 1rem;
-        }
-        .news-card:not(:first-child) .news-card-body {
-          margin-top: 0;
         }
         .news-card h2 {
-          font-size: 1.25rem;
-          margin-bottom: 0.5rem;
-        }
-        .news-grid .news-card:first-child h2 {
-          font-size: 1.5rem;
+          font-size: 1.5rem !important;
+          line-height: 1.2;
+          margin-bottom: 0.75rem;
         }
       }
     </style>
@@ -161,8 +180,8 @@ try {
 
       {news.length === 0 && !error && <p>Henüz haber bulunmuyor.</p>}
 
-      <div class="news-grid">
-        {news.map((item) => {
+      <div class="news-grid" id="news-grid">
+        {news.map((item, index) => {
           const description =
             item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 160);
           const imageUrl = item.featuredImage
@@ -170,14 +189,14 @@ try {
             : null;
 
           return (
-            <article class="news-card">
+            <article class="news-card" style={index >= 30 ? "display: none" : ""}>
               {imageUrl && (
                 <a href={`/haberler/${item.slug}`}>
                   <img
                     src={imageUrl}
                     alt={item.featuredImage?.alt ?? item.title}
-                    width={item.featuredImage?.width ?? 600}
-                    height={item.featuredImage?.height ?? 338}
+                    width={600}
+                    height={338}
                   />
                 </a>
               )}
@@ -199,7 +218,37 @@ try {
           );
         })}
       </div>
+
+      {news.length > 30 && (
+        <button id="load-more-btn" class="load-more-btn">
+          Daha Fazla Haber Gör
+        </button>
+      )}
     </main>
     <Footer />
+
+    <script>
+      const btn = document.getElementById('load-more-btn');
+      const grid = document.getElementById('news-grid');
+      const cards = grid?.querySelectorAll('.news-card');
+      let currentlyShown = 30;
+      const batchSize = 30;
+
+      btn?.addEventListener('click', () => {
+        if (!cards) return;
+        
+        const nextBatch = Math.min(currentlyShown + batchSize, cards.length);
+        
+        for (let i = currentlyShown; i < nextBatch; i++) {
+          (cards[i] as HTMLElement).style.display = 'flex';
+        }
+        
+        currentlyShown = nextBatch;
+        
+        if (currentlyShown >= cards.length) {
+          btn.classList.add('hidden');
+        }
+      });
+    </script>
   </body>
 </html>
