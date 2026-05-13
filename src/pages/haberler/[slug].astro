@@ -210,8 +210,6 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
     <Header />
     <main>
       <div class="prose">
-        <a href="/haberler" class="back-link">← Tüm Haberler</a>
-
         {error && <p class="error-message">⚠️ {error}</p>}
 
         {news && (
