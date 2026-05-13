@@ -8,27 +8,18 @@ const { className = "" } = Astro.props;
 
 <div class={`flex items-center gap-2 ${className}`}>
   <svg
-    width="32"
-    height="32"
     viewBox="0 0 32 32"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    class="w-8 h-8"
+    class="w-8 h-8 md:w-8 md:h-8 w-10 h-10"
   >
-    <!-- Triangle symbolizing growth/analysis -->
     <path
       d="M16 4L28 24H4L16 4Z"
       fill="currentColor"
       class="text-primary"
     />
-    <!-- Subtle secondary element for a 'pro' look -->
-    <path
-      d="M16 12L22 22H10L16 12Z"
-      fill="white"
-      fill-opacity="0.2"
-    />
   </svg>
-  <span class="font-extrabold text-xl tracking-tighter text-foreground">
+  <span class="hidden md:inline font-extrabold text-xl tracking-tighter text-foreground">
     PARA<span class="text-primary">ANALİZ</span>
   </span>
 </div>

@@ -192,6 +192,13 @@ function formatDate(dateStr: string | null): string {
         gap: 1.5rem;
         margin-bottom: 2rem;
       }
+
+      @media (max-width: 768px) {
+        .small-grid, .load-more-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
       .cta-banner {
         background: var(--muted);
         color: var(--foreground);
@@ -202,6 +209,7 @@ function formatDate(dateStr: string | null): string {
         align-items: center;
         gap: 2rem;
         border: 1px solid var(--border);
+        opacity: 0.8; /* More subtle */
       }
       .cta-banner .rocket {
         font-size: 3rem;
