@@ -55,6 +55,7 @@
 body {
 	margin: 0;
 	padding: 0;
+	padding-bottom: 40px;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	font-size: 18px;
