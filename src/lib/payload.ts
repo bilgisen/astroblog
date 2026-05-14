@@ -7,6 +7,7 @@
  * Local dev: falls back to the public PAYLOAD_API_URL env variable.
  */
 
+// @ts-ignore
 import { env as cfEnv } from 'cloudflare:workers';
 
 const PUBLIC_API_URL =
@@ -19,7 +20,8 @@ const PUBLIC_API_URL =
 export async function fetchFromPayload(endpoint: string): Promise<unknown> {
   let res: Response;
 
-  const paback = (cfEnv as unknown as { PABACK?: Fetcher }).PABACK;
+  // @ts-ignore
+  const paback = (cfEnv as any).PABACK;
 
   if (paback) {
     // Production: Service Binding — direct Worker-to-Worker call
@@ -278,6 +280,7 @@ export function lexicalToHtml(body: unknown): string {
       format?: number;
       children?: unknown[];
       fields?: { url?: string; linkType?: string };
+      value?: { url?: string; alt?: string };
     };
 
     if (n.type === 'text') {
