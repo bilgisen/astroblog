@@ -185,16 +185,21 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
 
       @media (max-width: 720px) {
         h1 {
-          font-size: 2rem;
+          font-size: 2.25rem;
+          line-height: 1.1;
         }
         .excerpt {
           font-size: 1.1rem;
         }
         .hero-image {
+          width: calc(100% + 2rem);
+          margin-left: -1rem;
+          margin-right: -1rem;
           margin-bottom: 1.5rem;
         }
         .prose {
           padding: 0 1rem 3rem;
+          overflow-x: hidden;
         }
         .latest-grid {
           grid-template-columns: 1fr;

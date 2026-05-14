@@ -75,15 +75,15 @@ function formatDate(dateStr: string | null): string {
 
       /* ── Article ── */
       .article-hero {
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        margin-right: calc(-50vw + 50%);
+        position: relative;
+        width: calc(100% + 2.5rem);
+        margin-left: -1.25rem;
+        margin-right: -1.25rem;
         margin-bottom: 2.5rem;
-        overflow: hidden;
       }
       .article-hero img {
         width: 100%;
-        max-height: 600px;
+        max-height: 500px;
         object-fit: cover;
         display: block;
       }
@@ -92,6 +92,7 @@ function formatDate(dateStr: string | null): string {
         max-width: 100%;
         margin: 0 auto;
         padding: 2rem 1.25rem 4rem;
+        overflow-x: hidden;
       }
       .article-meta {
         display: flex;
@@ -116,36 +117,36 @@ function formatDate(dateStr: string | null): string {
         margin: 0 0 1.5rem;
       }
 
-      /* Author box */
+      /* Author box (Substack Style) */
       .author-box {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: var(--muted);
-        border-radius: 12px;
-        margin-bottom: 3rem;
-        border: 1px solid var(--border);
+        gap: 0.85rem;
+        padding: 0;
+        margin-bottom: 2.5rem;
+        border: none;
+        background: transparent;
       }
       .author-box img, .author-avatar-placeholder {
-        width: 56px;
-        height: 56px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
+        border: 1px solid var(--border);
       }
       .author-avatar-placeholder {
-        background: var(--border);
+        background: var(--muted);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
       }
       .author-info .name {
-        font-weight: 800;
+        font-weight: 700;
         font-size: 1rem;
         color: var(--foreground);
-        margin: 0 0 0.25rem;
+        margin: 0;
       }
       .author-info .bio {
         font-size: 0.85rem;
@@ -235,17 +236,29 @@ function formatDate(dateStr: string | null): string {
 
       @media (max-width: 720px) {
         .article-title {
-          font-size: 2rem;
+          font-size: 2.25rem;
+          line-height: 1.1;
         }
         article {
           padding: 1.5rem 1rem 3rem;
         }
         .article-hero {
+          width: calc(100% + 2rem);
+          margin-left: -1rem;
+          margin-right: -1rem;
           margin-bottom: 1.5rem;
         }
+        .author-box {
+          padding: 1.25rem;
+          gap: 1rem;
+        }
+        .article-body {
+          font-size: 1.05rem;
+        }
         .sidebar {
-          padding: 2rem 1rem;
+          padding: 3rem 1rem;
           border-top: 1px solid var(--border);
+          position: static;
         }
       }
     </style>

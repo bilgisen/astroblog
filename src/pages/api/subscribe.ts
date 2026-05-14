@@ -1,13 +1,17 @@
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 
-export const POST: APIRoute = async ({ request }) => {
-  const apiKey = import.meta.env.RESEND_API_KEY;
+export const POST: APIRoute = async (context) => {
+  const { request, locals } = context;
+  
+  // Cloudflare Pages stores env vars in locals.runtime.env
+  // import.meta.env is for build-time/local dev
+  const apiKey = (locals as any)?.runtime?.env?.RESEND_API_KEY || import.meta.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.error('Newsletter Error: RESEND_API_KEY is missing in environment variables.');
+    console.error('Newsletter Error: RESEND_API_KEY is missing.');
     return new Response(JSON.stringify({ 
-      error: 'Sistem şu anda bülten kayıtlarını kabul edemiyor (API Key eksik).' 
+      error: 'Sistem şu anda bülten kayıtlarını kabul edemiyor (Yapılandırma hatası).' 
     }), { status: 500 });
   }
 
