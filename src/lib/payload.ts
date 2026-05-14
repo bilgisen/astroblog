@@ -215,7 +215,7 @@ export async function fetchBlogList(
   limit = 10
 ): Promise<BlogListResponse> {
   return fetchFromPayload(
-    `/api/blog?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt`
+    `/api/blog?depth=2&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt`
   ) as Promise<BlogListResponse>;
 }
 
