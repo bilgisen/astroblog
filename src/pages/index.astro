@@ -13,7 +13,7 @@ let error: string | null = null;
 
 try {
   const [newsData, blogData] = await Promise.all([
-    fetchNewsList(1, 50),
+    fetchNewsList(1, 20),
     fetchBlogList(1, 6),
   ]);
   news = newsData.docs;
@@ -250,8 +250,11 @@ function formatDate(dateStr: string | null): string {
 
       /* Ana sayfa için main genişliğini artır */
       :global(main) {
-        width: 1200px !important;
-        max-width: calc(100% - 2em) !important;
+        width: 100% !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 0 1rem !important;
+        box-sizing: border-box;
       }
       .sidebar {
         position: sticky;
