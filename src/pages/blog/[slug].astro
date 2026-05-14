@@ -59,8 +59,8 @@ function formatDate(dateStr: string | null): string {
     <style>
       .page-layout {
         max-width: 1200px;
-        margin: 0 auto;
-        padding: 0;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
         display: grid;
         grid-template-columns: 1fr 300px;
         gap: 4rem;
@@ -76,12 +76,11 @@ function formatDate(dateStr: string | null): string {
       /* ── Article ── */
       .article-hero {
         position: relative;
-        width: calc(100% + 2.5rem);
-        margin-left: -1.25rem;
-        margin-right: -1.25rem;
+        width: 100%;
         margin-bottom: 2.5rem;
         aspect-ratio: 16 / 9;
         overflow: hidden;
+        border-radius: 16px;
       }
       .article-hero img {
         width: 100%;
@@ -90,10 +89,10 @@ function formatDate(dateStr: string | null): string {
         display: block;
       }
       article {
-        width: 720px;
-        max-width: 100%;
+        width: 100%;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 2rem 1.25rem 4rem;
+        padding: 0 0 4rem;
         box-sizing: border-box;
       }
       .article-meta {
@@ -162,6 +161,29 @@ function formatDate(dateStr: string | null): string {
         line-height: 1.75;
         font-size: 1.25rem; /* Premium reading size */
         letter-spacing: -0.01em;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+      .article-body :global(pre),
+      .article-body :global(table) {
+        max-width: 100%;
+        overflow-x: auto;
+      }
+      .article-body :global(.yt-embed) {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        max-width: 100%;
+        border-radius: 8px;
+        margin: 2.5rem 0;
+      }
+      .article-body :global(.yt-embed iframe) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
       }
       .article-body :global(p) { margin-bottom: 2rem; }
       .article-body :global(h2) { 
@@ -238,20 +260,23 @@ function formatDate(dateStr: string | null): string {
       }
 
       @media (max-width: 720px) {
+        .page-layout {
+          padding: 0 1rem;
+        }
         .article-title {
           font-size: 2.25rem;
           margin-bottom: 1.5rem;
           line-height: 1.1;
         }
         article {
-          padding: 1.5rem 1rem 3rem;
-          overflow-x: hidden;
+          padding: 1.5rem 0 3rem;
         }
         .article-hero {
-          width: calc(100% + 2rem);
-          margin-left: -1rem;
-          margin-right: -1rem;
+          width: 100%;
+          margin-left: 0;
+          margin-right: 0;
           margin-bottom: 1.5rem;
+          border-radius: 12px;
         }
         .article-body {
           font-size: 1.125rem;
