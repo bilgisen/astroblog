@@ -99,6 +99,8 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
         font-size: 1.125rem;
         line-height: 1.8;
         color: var(--foreground);
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
       .content :global(p) {
         margin-bottom: 1.75rem;
@@ -109,6 +111,23 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
         margin-bottom: 1rem;
         font-weight: 800;
         letter-spacing: -0.02em;
+      }
+      .content :global(img) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        display: block;
+        margin: 0 auto;
+      }
+      .content :global(.content-image),
+      .content :global(figure) {
+        margin: 2.5rem 0;
+        text-align: center;
+      }
+      .content :global(pre),
+      .content :global(table) {
+        max-width: 100%;
+        overflow-x: auto;
       }
       .back-link {
         display: inline-flex;

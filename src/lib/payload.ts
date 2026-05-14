@@ -314,6 +314,14 @@ export function lexicalToHtml(body: unknown): string {
         }
         return `<a href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
       }
+      case 'upload': {
+        const url = n.value?.url ? resolveMediaUrl(n.value.url) : '';
+        const alt = n.value?.alt || '';
+        if (url) {
+          return `<figure class="content-image"><img src="${url}" alt="${alt}" loading="lazy" /></figure>\n`;
+        }
+        return '';
+      }
       default: return inner;
     }
   }
