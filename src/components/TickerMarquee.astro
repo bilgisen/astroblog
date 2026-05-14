@@ -94,10 +94,10 @@
       const data = await response.json();
       
       if (data && data.data) {
-        const items = data.data.sort((a, b) => a.display_order - b.display_order);
+        const items = data.data.sort((a: any, b: any) => a.display_order - b.display_order);
         
         let html = '';
-        items.forEach(item => {
+        items.forEach((item: any) => {
           let diffClass = 'neutral';
           let diffSign = '';
           if (item.diff_percent > 0) {
