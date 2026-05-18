@@ -315,7 +315,9 @@ function formatDate(dateStr: string | null): string {
             )}
 
             <div class="article-meta">
-              {post.category && <span class="category">{post.category.name}</span>}
+              {post.category && post.category.id !== 26 && post.category.name.toLowerCase() !== 'advertorial' && (
+                <span class="category">{post.category.name}</span>
+              )}
               {post.publishedAt && (
                 <span class="date">{formatDate(post.publishedAt)}</span>
               )}

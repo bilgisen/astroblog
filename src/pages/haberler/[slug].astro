@@ -251,7 +251,9 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
               )}
 
               <div class="article-meta">
-                {news.category && <span class="category">{news.category.name}</span>}
+                {news.category && news.category.id !== 26 && news.category.name.toLowerCase() !== 'advertorial' && (
+                  <span class="category">{news.category.name}</span>
+                )}
                 {news.author && <span class="author">{news.author.name}</span>}
               </div>
 
