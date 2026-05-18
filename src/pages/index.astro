@@ -13,7 +13,7 @@ let error: string | null = null;
 
 try {
   const [newsData, blogData] = await Promise.all([
-    fetchNewsList(1, 20),
+    fetchNewsList(1, 20, 26),
     fetchBlogList(1, 6),
   ]);
   news = newsData.docs;
