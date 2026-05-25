@@ -2,22 +2,84 @@
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import MainSlider from '../components/MainSlider.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import { fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText } from '../lib/payload';
-import type { NewsItem, BlogItem } from '../lib/payload';
+import { fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, fetchFromPayload } from '../lib/payload';
+import type { NewsItem, BlogItem, NewsListResponse } from '../lib/payload';
 import { Button } from '@/components/ui/button';
 
 let news: NewsItem[] = [];
+let sliderSlides: NewsItem[] = [];
 let blogs: BlogItem[] = [];
 let error: string | null = null;
 
 try {
+  // Fetch latest 40 news items and 6 blog posts
   const [newsData, blogData] = await Promise.all([
-    fetchNewsList(1, 20, 26),
+    fetchNewsList(1, 40, 26),
     fetchBlogList(1, 6),
   ]);
-  news = newsData.docs;
+  
+  const latestNewsDocs = newsData.docs;
   blogs = blogData.docs;
+
+  // Fetch slide-tagged news items for exact slot positioning
+  let taggedNewsDocs: NewsItem[] = [];
+  try {
+    const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`).join(',');
+    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&limit=30`) as NewsListResponse;
+    taggedNewsDocs = taggedRes.docs;
+  } catch (err) {
+    console.error("Error fetching tagged slider items:", err);
+  }
+
+  // Combine and sort candidates by publish date descending
+  const allCandidatesMap = new Map<number, NewsItem>();
+  latestNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
+  taggedNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
+
+  const sortedCandidates = Array.from(allCandidatesMap.values()).sort((a, b) => {
+    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  // Pin tagged news items to specific slots
+  const slides: (NewsItem | null)[] = Array(10).fill(null);
+  const placedIds = new Set<number>();
+
+  sortedCandidates.forEach(item => {
+    if (item.tags && item.tags.length > 0) {
+      const slideTag = item.tags.find(t => /^slide-\d+$/.test(t.slug));
+      if (slideTag) {
+        const pos = parseInt(slideTag.slug.replace('slide-', ''), 10);
+        const index = pos - 1;
+        if (index >= 0 && index < 10) {
+          if (!slides[index]) {
+            slides[index] = item;
+            placedIds.add(item.id);
+          }
+        }
+      }
+    }
+  });
+
+  // Fill empty slots with untagged/unplaced latest news
+  for (let i = 0; i < 10; i++) {
+    if (!slides[i]) {
+      const nextAvailable = sortedCandidates.find(item => !placedIds.has(item.id));
+      if (nextAvailable) {
+        slides[i] = nextAvailable;
+        placedIds.add(nextAvailable.id);
+      }
+    }
+  }
+
+  sliderSlides = slides.filter((s): s is NewsItem => s !== null);
+
+  // Remaining news items populate the home page feed (without duplication)
+  news = sortedCandidates.filter(item => !placedIds.has(item.id));
+
 } catch (e) {
   error = e instanceof Error ? e.message : 'İçerik yüklenemedi.';
 }
@@ -386,6 +448,9 @@ function formatDate(dateStr: string | null): string {
           height="90"
         />
       </a>
+
+      <!-- Main Slider (Premium Embla Carousel) -->
+      <MainSlider slides={sliderSlides} />
 
       <div class="page-layout">
         <!-- Sol: Haberler -->
