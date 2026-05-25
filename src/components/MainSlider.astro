@@ -202,23 +202,23 @@ const { slides } = Astro.props;
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(0, 0, 0, 0.3);
-    color: rgba(255, 255, 255, 0.8);
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 10;
     transition: all 0.3s ease;
-    backdrop-filter: blur(4px);
+    backdrop-filter: none;
   }
 
   .embla__prev:hover,
   .embla__next:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: transparent;
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.2);
   }
 
   .embla__prev {
@@ -230,8 +230,9 @@ const { slides } = Astro.props;
   }
 
   .chevron-icon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
   }
 
   /* Dot Nav (Mobile) */
@@ -288,10 +289,11 @@ const { slides } = Astro.props;
   }
 
   .thumb-num {
-    font-size: 0.75rem;
-    font-weight: 800;
+    font-size: 1.1rem;
+    font-weight: 900;
     color: var(--primary);
     font-family: var(--font-mono, monospace);
+    letter-spacing: -0.02em;
   }
 
   .thumb-title {
@@ -381,7 +383,15 @@ const { slides } = Astro.props;
 
     .slide-title {
       font-size: 1.5rem;
+      display: -webkit-box;
       -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .image-wrapper img {
+      object-fit: cover;
+      object-position: center 30%; /* Smart crop positioning for vertical screens */
     }
   }
 </style>
