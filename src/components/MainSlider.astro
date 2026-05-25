@@ -398,7 +398,6 @@ const { slides } = Astro.props;
 
 <script>
   import EmblaCarousel from 'embla-carousel';
-  import Fade from 'embla-carousel-fade';
 
   function initSlider() {
     const mainSlider = document.getElementById('main-slider');
@@ -416,7 +415,7 @@ const { slides } = Astro.props;
       loop: true,
       duration: 30,
       skipSnaps: false,
-    }, [Fade()]);
+    });
 
     // Autoplay logic
     let autoplayInterval: any;
