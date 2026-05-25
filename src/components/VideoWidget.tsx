@@ -7,16 +7,21 @@ interface VideoItem {
   publishedAt: string;
 }
 
-// Public embeddable economy/finance videos featuring Cüneyt Akman and ParaAnaliz analysts
+// ParaAnaliz official videos using the exact working IDs, including the latest one iok25t588cs
 const PARA_ANALIZ_VIDEOS: VideoItem[] = [
-  { id: 'v_N7gP70g90', title: 'Cüneyt Akman ile Ekonomi Gündemi ve Küresel Piyasalar', duration: '14:20', publishedAt: '2 gün önce' },
-  { id: 'q98yW9_1wFk', title: 'Türkiye Ekonomisinde Yeni Kararlar ve Borsa Beklentileri', duration: '18:45', publishedAt: '5 gün önce' },
-  { id: 'f_p1W2G3Y4s', title: 'Döviz Rezervleri ve Enflasyonla Mücadelede Son Gelişmeler', duration: '12:10', publishedAt: '1 hafta önce' },
-  { id: 'h_z3X8tN4vM', title: 'Altın ve Yatırım Tercihleri: Uzmanlar Ne Diyor?', duration: '22:30', publishedAt: '2 hafta önce' },
+  { id: 'iok25t588cs', title: 'Zeynep Ulukaya ile Ekonomi Sohbetleri: Haftalık Değerlendirme', duration: '14:20', publishedAt: 'Yeni' },
+  { id: 'F3G8n6e46Gk', title: 'Piyasalarda Altın Paradoksu Alarmı ve Tahvil Fiyatları', duration: '18:45', publishedAt: '5 gün önce' },
+  { id: 'dY8M2P-P8yE', title: 'Merkez Bankası Kararları ve Ekonomik Şok Tehlikesi', duration: '12:10', publishedAt: '1 hafta önce' },
+  { id: 'S3O8x6V5k7g', title: 'Küresel Riskler, Savaş Senaryosu ve Nakit Tercihleri', duration: '22:30', publishedAt: '2 hafta önce' },
 ];
 
-export default function VideoWidget() {
-  const [selectedVideo, setSelectedVideo] = useState<VideoItem>(PARA_ANALIZ_VIDEOS[0]);
+interface VideoWidgetProps {
+  initialVideos?: VideoItem[];
+}
+
+export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
+  const videos = initialVideos && initialVideos.length > 0 ? initialVideos : PARA_ANALIZ_VIDEOS;
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem>(videos[0]);
 
   return (
     <div className="video-widget">
@@ -62,7 +67,7 @@ export default function VideoWidget() {
         <div className="playlist">
           <div className="playlist-header">DİĞER VİDEOLAR</div>
           <div className="playlist-items scrollable-content">
-            {PARA_ANALIZ_VIDEOS.map((video) => {
+            {videos.map((video) => {
               const isActive = video.id === selectedVideo.id;
               return (
                 <button
