@@ -1,0 +1,156 @@
+---
+// Google News Banner Component
+---
+
+<div class="google-news-banner">
+  <div class="gn-left">
+    <div class="gn-icon-wrapper">
+      <svg viewBox="0 0 24 24" width="32" height="32" class="gn-svg">
+        <rect x="2" y="3" width="20" height="18" rx="3" fill="currentColor" class="gn-bg" opacity="0.1" />
+        <path d="M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="2" class="gn-border"/>
+        <path d="M7 10h10M7 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="gn-lines"/>
+        <circle cx="16" cy="14" r="1.5" fill="#4285F4"/>
+      </svg>
+      <div class="gn-dots">
+        <span class="dot blue"></span>
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+    </div>
+    <div class="gn-text">
+      <h4>Google News'te Takip Edin</h4>
+      <p>Para Analiz haberlerini anında almak için Google News üzerinden bizi takip edin.</p>
+    </div>
+  </div>
+  <a href="https://news.google.com/publications/CAowubjLDA?hl=tr&gl=TR&ceid=TR:tr" target="_blank" rel="noopener noreferrer" class="gn-btn">
+    <span>Takip Et</span>
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>
+
+<style>
+  .google-news-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.06) 0%, rgba(26, 115, 232, 0.01) 100%);
+    border: 1px solid rgba(26, 115, 232, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem 2rem;
+    margin-bottom: 2.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  :global(.dark) .google-news-banner {
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border-color: rgba(26, 115, 232, 0.25);
+  }
+
+  .google-news-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(26, 115, 232, 0.08);
+    border-color: rgba(26, 115, 232, 0.35);
+  }
+
+  .gn-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex: 1;
+  }
+
+  .gn-icon-wrapper {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
+  }
+
+  .gn-svg {
+    color: var(--foreground);
+  }
+
+  .gn-dots {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    display: flex;
+    gap: 2px;
+    background: var(--background);
+    padding: 3px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .gn-dots .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .gn-dots .dot.blue { background: #4285F4; }
+  .gn-dots .dot.red { background: #EA4335; }
+  .gn-dots .dot.yellow { background: #FBBC05; }
+  .gn-dots .dot.green { background: #34A853; }
+
+  .gn-text h4 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 0 0.2rem 0;
+    color: var(--foreground);
+    letter-spacing: -0.02em;
+  }
+
+  .gn-text p {
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--muted-foreground);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .gn-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #1a73e8;
+    color: #ffffff !important;
+    padding: 0.65rem 1.5rem;
+    border-radius: 99px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
+    flex-shrink: 0;
+  }
+
+  .gn-btn:hover {
+    background: #1557b0;
+    transform: translateX(3px);
+    box-shadow: 0 6px 18px rgba(26, 115, 232, 0.35);
+  }
+
+  @media (max-width: 768px) {
+    .google-news-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .gn-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

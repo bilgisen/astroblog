@@ -3,6 +3,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import MainSlider from '../components/MainSlider.astro';
+import GoogleNewsBanner from '../components/GoogleNewsBanner.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, fetchFromPayload } from '../lib/payload';
 import type { NewsItem, BlogItem, NewsListResponse } from '../lib/payload';
@@ -447,6 +448,8 @@ function formatDate(dateStr: string | null): string {
       <div class="page-layout">
         <!-- Sol: Haberler -->
         <div>
+          <GoogleNewsBanner />
+
           {error && (
             <p style="color:#c00;padding:1rem;border:1px solid #fcc;border-radius:8px;background:#fff5f5;">
               ⚠️ {error}

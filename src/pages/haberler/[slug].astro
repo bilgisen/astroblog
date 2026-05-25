@@ -2,6 +2,7 @@
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
+import GoogleNewsBanner from '../../components/GoogleNewsBanner.astro';
 import { fetchNewsBySlug, fetchNewsList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml } from '../../lib/payload';
 import type { NewsItem } from '../../lib/payload';
 
@@ -266,6 +267,10 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
               )}
 
               <div class="content" set:html={bodyHtml} />
+              
+              <div style="margin-top: 3.5rem;">
+                <GoogleNewsBanner />
+              </div>
             </article>
 
             {latestNews.length > 0 && (
