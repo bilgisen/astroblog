@@ -228,16 +228,38 @@
   let deferredPrompt: any = null;
   let showBannerPending = false;
 
-  // 1. Service Worker Registration
+  // 1. Service Worker Registration with Auto-Update logic
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => {
           console.log('PWA: Service Worker registered successfully with scope:', reg.scope);
+
+          // Handle automatic reloading when an update is found and installed
+          reg.addEventListener('updatefound', () => {
+            const installingWorker = reg.installing;
+            if (installingWorker) {
+              installingWorker.addEventListener('statechange', () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('PWA: New content is available; reloading page...');
+                  window.location.reload();
+                }
+              });
+            }
+          });
         })
         .catch((err) => {
           console.error('PWA: Service Worker registration failed:', err);
         });
+
+      // Handle controllerchange (when the new service worker takes over)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        console.log('PWA: Service worker controller changed; refreshing...');
+        window.location.reload();
+      });
     });
   }
 
