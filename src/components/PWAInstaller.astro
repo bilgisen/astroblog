@@ -1,0 +1,346 @@
+---
+// PWAInstaller.astro - PWA registration and install banner component
+---
+
+<!-- Beautiful PWA Install Banner -->
+<div id="pwa-install-banner" class="pwa-banner hidden" role="dialog" aria-labelledby="pwa-title" aria-describedby="pwa-desc">
+  <div class="pwa-content">
+    <button id="pwa-close-btn" class="pwa-close" aria-label="Kapat">
+      <svg viewBox="0 0 24 24" width="20" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    
+    <div class="pwa-info-row">
+      <div class="pwa-icon-wrapper">
+        <img src="/icon-192.png" alt="ParaAnaliz Logo" class="pwa-app-icon" width="64" height="64" />
+      </div>
+      <div class="pwa-text-wrapper">
+        <h3 id="pwa-title" class="pwa-app-title">ParaAnaliz</h3>
+        <p id="pwa-desc" class="pwa-app-desc">Mobil Uygulamamızı hemen yükleyin, ekonomi gündemini anlık takip edin.</p>
+      </div>
+    </div>
+    
+    <div class="pwa-actions-row">
+      <button id="pwa-dismiss-btn" class="pwa-btn pwa-btn-secondary">Daha Sonra</button>
+      <button id="pwa-install-btn" class="pwa-btn pwa-btn-primary">Hemen Yükle</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ── PWA Banner Container ── */
+  .pwa-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    width: calc(100% - 32px);
+    max-width: 440px;
+    z-index: 10000;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pwa-banner.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pwa-banner.hidden {
+    display: none;
+  }
+
+  /* ── Rich Glassmorphic Design ── */
+  .pwa-content {
+    position: relative;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 
+      0 10px 40px -10px rgba(0, 131, 176, 0.15),
+      0 1px 1px rgba(255, 255, 255, 0.8) inset,
+      0 0 0 1px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+  }
+
+  :global(.dark) .pwa-content {
+    background: rgba(30, 30, 35, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 10px 40px -10px rgba(0, 0, 0, 0.5),
+      0 1px 1px rgba(255, 255, 255, 0.05) inset,
+      0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Close Button */
+  .pwa-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+  }
+
+  .pwa-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--foreground);
+    opacity: 1;
+  }
+
+  :global(.dark) .pwa-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Info Row */
+  .pwa-info-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-right: 1rem;
+  }
+
+  .pwa-icon-wrapper {
+    flex-shrink: 0;
+  }
+
+  .pwa-app-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    box-shadow: 
+      0 4px 12px rgba(0, 131, 176, 0.2),
+      0 0 0 1px rgba(0, 0, 0, 0.05);
+    display: block;
+    animation: bounceSlow 3s infinite ease-in-out;
+  }
+
+  .pwa-text-wrapper {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pwa-app-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin: 0 0 0.2rem 0;
+    letter-spacing: -0.02em;
+  }
+
+  .pwa-app-desc {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  /* Actions Row */
+  .pwa-actions-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .pwa-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    border: none;
+    outline: none;
+  }
+
+  .pwa-btn-primary {
+    background: #0083b0;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 131, 176, 0.25);
+  }
+
+  .pwa-btn-primary:hover {
+    background: #007299;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 131, 176, 0.35);
+  }
+
+  .pwa-btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .pwa-btn-secondary {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border: 1px solid var(--border);
+  }
+
+  .pwa-btn-secondary:hover {
+    background: var(--border);
+    color: var(--foreground);
+  }
+
+  /* ── Micro-animations ── */
+  @keyframes bounceSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Mobile adjustment */
+  @media (max-width: 480px) {
+    .pwa-banner {
+      bottom: 16px;
+      width: calc(100% - 24px);
+    }
+    .pwa-content {
+      padding: 1.2rem;
+      border-radius: 18px;
+    }
+    .pwa-app-title {
+      font-size: 1.05rem;
+    }
+    .pwa-app-desc {
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<script>
+  let deferredPrompt: any = null;
+
+  // 1. Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => {
+          console.log('PWA: Service Worker registered successfully with scope:', reg.scope);
+        })
+        .catch((err) => {
+          console.error('PWA: Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  // Helper to check if running in standalone mode (PWA installed)
+  function isStandalone() {
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone ||
+      document.referrer.includes('android-app://')
+    );
+  }
+
+  // Helper to detect Android
+  function isAndroid() {
+    return /Android/i.test(navigator.userAgent);
+  }
+
+  // Helper to detect Mobile in general
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const banner = document.getElementById('pwa-install-banner');
+    const installBtn = document.getElementById('pwa-install-btn');
+    const dismissBtn = document.getElementById('pwa-dismiss-btn');
+    const closeBtn = document.getElementById('pwa-close-btn');
+
+    if (!banner) return;
+
+    // Check if user already dismissed or app is already installed
+    const dismissedTime = localStorage.getItem('pwa_prompt_dismissed_time');
+    const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 7 * 24 * 60 * 60 * 1000); // 7 days grace period
+
+    if (isStandalone() || isDismissedRecently) {
+      console.log('PWA: Installation prompt skipped (standalone or dismissed recently)');
+      return;
+    }
+
+    // 2. Intercept browser install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      deferredPrompt = e;
+      
+      // Show custom banner
+      // We prioritize showing it to mobile/Android users as requested, but can support all devices
+      if (isMobile()) {
+        banner.classList.remove('hidden');
+        // Force reflow
+        banner.offsetHeight;
+        banner.classList.add('visible');
+      }
+    });
+
+    // 3. Install App Flow
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        // Hide our custom banner
+        hideBanner();
+        
+        // Show the browser prompt
+        deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`PWA: User response to install prompt: ${outcome}`);
+        
+        // We've used the prompt, and can't use it again
+        deferredPrompt = null;
+      });
+    }
+
+    // 4. Dismiss Banner Flow (Daha Sonra)
+    function dismissBanner() {
+      // Grace period of 7 days before showing again
+      localStorage.setItem('pwa_prompt_dismissed_time', Date.now().toString());
+      hideBanner();
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', dismissBanner);
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', dismissBanner);
+    }
+
+    function hideBanner() {
+      if (banner) {
+        banner.classList.remove('visible');
+        setTimeout(() => {
+          banner.classList.add('hidden');
+        }, 500); // Wait for transition animation to end
+      }
+    }
+
+    // If already installed, make sure it's hidden
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('PWA: Application installed successfully!');
+      hideBanner();
+    });
+  });
+</script>
