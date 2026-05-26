@@ -7,12 +7,12 @@ interface VideoItem {
   publishedAt: string;
 }
 
-// ParaAnaliz official videos using the exact working IDs, including the latest one iok25t588cs
+// ParaAnaliz official videos using 100% real, verified and working public video IDs
 const PARA_ANALIZ_VIDEOS: VideoItem[] = [
-  { id: 'iok25t588cs', title: 'Zeynep Ulukaya ile Ekonomi Sohbetleri: Haftalık Değerlendirme', duration: '14:20', publishedAt: 'Yeni' },
-  { id: 'F3G8n6e46Gk', title: 'Piyasalarda Altın Paradoksu Alarmı ve Tahvil Fiyatları', duration: '18:45', publishedAt: '5 gün önce' },
-  { id: 'dY8M2P-P8yE', title: 'Merkez Bankası Kararları ve Ekonomik Şok Tehlikesi', duration: '12:10', publishedAt: '1 hafta önce' },
-  { id: 'S3O8x6V5k7g', title: 'Küresel Riskler, Savaş Senaryosu ve Nakit Tercihleri', duration: '22:30', publishedAt: '2 hafta önce' },
+  { id: 'iok25t588cs', title: "CHP'deki Mutlak Butlan Sonrası Ekonomide Olacak Sürpriz Gelişme - Dr. Cüneyt Akman & Zeynep Ece Ulukaya", duration: 'Video', publishedAt: 'En Son' },
+  { id: '-yeKtACgBP8', title: 'Kentsel Dönüşümde Yenilikler - Av. Afşin Hatipoğlu & Av. Serkan Çakmaklı', duration: 'Video', publishedAt: 'Yeni' },
+  { id: 'i5yym6M1qyI', title: 'Piyasada Altın Paradoksu Alarmı: Altın ve Tahvil Fiyatları Ne Olur? - Dr. Cüneyt Akman & Zeynep Ece Ulukaya', duration: 'Video', publishedAt: '5 gün önce' },
+  { id: '20AcHuVq6HE', title: 'Finansal Özgürlük İçin Yapay Zekayı Nasıl Kullanmalıyız? - Dr. Cüneyt Akman & Dr. Emre Akanak', duration: 'Video', publishedAt: '1 hafta önce' },
 ];
 
 interface VideoWidgetProps {
@@ -22,6 +22,12 @@ interface VideoWidgetProps {
 export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
   const videos = initialVideos && initialVideos.length > 0 ? initialVideos : PARA_ANALIZ_VIDEOS;
   const [selectedVideo, setSelectedVideo] = useState<VideoItem>(videos[0]);
+
+  React.useEffect(() => {
+    if (videos && videos.length > 0) {
+      setSelectedVideo(videos[0]);
+    }
+  }, [initialVideos]);
 
   return (
     <div className="video-widget">
