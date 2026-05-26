@@ -22,12 +22,12 @@ interface VideoWidgetProps {
 export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
   const videos = initialVideos && initialVideos.length > 0 ? initialVideos : PARA_ANALIZ_VIDEOS;
   const [selectedVideo, setSelectedVideo] = useState<VideoItem>(videos[0]);
+  const [userHasSelected, setUserHasSelected] = useState<boolean>(false);
 
-  React.useEffect(() => {
-    if (videos && videos.length > 0) {
-      setSelectedVideo(videos[0]);
-    }
-  }, [initialVideos]);
+  const handleVideoSelect = (video: VideoItem) => {
+    setSelectedVideo(video);
+    setUserHasSelected(true);
+  };
 
   return (
     <div className="video-widget">
@@ -53,7 +53,7 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         <div className="main-player">
           <div className="iframe-wrapper">
             <iframe
-              src={`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=0&rel=0&modestbranding=1`}
+              src={`https://www.youtube.com/embed/${selectedVideo.id}?autoplay=${userHasSelected ? '1' : '0'}&rel=0&modestbranding=1`}
               title={selectedVideo.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -79,7 +79,7 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
                 <button
                   key={video.id}
                   className={`playlist-item ${isActive ? 'active' : ''}`}
-                  onClick={() => setSelectedVideo(video)}
+                  onClick={() => handleVideoSelect(video)}
                 >
                   <div className="thumb-wrapper">
                     <img

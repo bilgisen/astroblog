@@ -3,6 +3,9 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 import GoogleNewsBanner from '../../components/GoogleNewsBanner.astro';
+import VideoWidget from '../../components/VideoWidget';
+import { fetchParaAnalizVideos } from '../../lib/youtube';
+import type { VideoItem } from '../../lib/youtube';
 import { fetchNewsBySlug, fetchNewsList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml } from '../../lib/payload';
 import type { NewsItem } from '../../lib/payload';
 
@@ -12,16 +15,19 @@ const { slug } = Astro.params;
 
 let news: NewsItem | null = null;
 let latestNews: NewsItem[] = [];
+let ytVideos: VideoItem[] = [];
 let error: string | null = null;
 
 try {
-  const [newsData, latestData] = await Promise.all([
+  const [newsData, latestData, videos] = await Promise.all([
     fetchNewsBySlug(slug!),
-    fetchNewsList(1, 11) // Fetch 11 to account for current post
+    fetchNewsList(1, 11), // Fetch 11 to account for current post
+    fetchParaAnalizVideos(),
   ]);
   
   news = newsData;
   latestNews = latestData.docs.filter(item => item.slug !== slug).slice(0, 10);
+  ytVideos = videos;
   
   if (!news) error = 'Haber bulunamadı.';
 } catch (e) {
@@ -32,6 +38,15 @@ const imageUrl = news?.featuredImage ? resolveMediaUrl(news.featuredImage.url) :
 const description = news?.seo?.metaDescription ?? lexicalToPlainText(news?.body).slice(0, 160);
 
 const bodyHtml = news ? lexicalToHtml(news.body) : '';
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 ---
 
 <!doctype html>
@@ -80,7 +95,7 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
         color: var(--foreground);
       }
       h1 {
-        font-size: 2.75rem;
+        font-size: 2.25rem;
         font-weight: 800;
         line-height: 1.15;
         letter-spacing: -0.04em;
@@ -141,6 +156,27 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
         transition: opacity 0.2s;
       }
       .back-link:hover { opacity: 0.8; }
+      
+      .article-footer-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding-top: 1.5rem;
+        margin-top: 2.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.95rem;
+        color: var(--muted-foreground);
+      }
+      .article-footer-meta .author,
+      .article-footer-meta .date {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .article-footer-meta strong {
+        color: var(--foreground);
+        font-weight: 700;
+      }
       
       /* Latest News Section */
       .latest-news-section {
@@ -204,21 +240,25 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
       }
 
       @media (max-width: 720px) {
+        :global(main) {
+          padding: 1rem 0.5rem !important;
+          max-width: 100% !important;
+        }
         h1 {
-          font-size: 2.25rem;
+          font-size: 1.75rem;
           line-height: 1.1;
         }
         .excerpt {
           font-size: 1.1rem;
         }
         .hero-image {
-          width: calc(100% + 2rem);
-          margin-left: -1rem;
-          margin-right: -1rem;
+          width: calc(100% + 1rem);
+          margin-left: -0.5rem;
+          margin-right: -0.5rem;
           margin-bottom: 1.5rem;
         }
         .prose {
-          padding: 0 1rem 3rem;
+          padding: 0 0.5rem 3rem;
           overflow-x: hidden;
         }
         .latest-grid {
@@ -255,7 +295,6 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
                 {news.category && news.category.id !== 26 && news.category.name.toLowerCase() !== 'advertorial' && (
                   <span class="category">{news.category.name}</span>
                 )}
-                {news.author && <span class="author">{news.author.name}</span>}
               </div>
 
               <h1>{news.title}</h1>
@@ -267,6 +306,19 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
               )}
 
               <div class="content" set:html={bodyHtml} />
+
+              <div class="article-footer-meta">
+                {news.author && (
+                  <span class="author">
+                    <strong>Yazar:</strong> {news.author.name}
+                  </span>
+                )}
+                {news.publishedAt && (
+                  <span class="date">
+                    <strong>Yayınlanma Tarihi:</strong> {formatDate(news.publishedAt)}
+                  </span>
+                )}
+              </div>
               
               <div style="margin-top: 3.5rem;">
                 <GoogleNewsBanner />
@@ -291,6 +343,11 @@ const bodyHtml = news ? lexicalToHtml(news.body) : '';
                 </div>
               </section>
             )}
+
+            <!-- Video Widget Section -->
+            <div style="margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;">
+              <VideoWidget client:load initialVideos={ytVideos} />
+            </div>
           </>
         )}
       </div>
