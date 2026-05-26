@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "ParaAnaliz",
   "short_name": "ParaAnaliz",
   "description": "Güncel Ekonomi, Siyaset, Finans ve Analiz Haberleri",
@@ -25,6 +26,13 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "/manifest.json",
+      "id": "/"
     }
   ]
 }

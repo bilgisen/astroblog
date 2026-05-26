@@ -226,6 +226,7 @@
 
 <script>
   let deferredPrompt: any = null;
+  let showBannerPending = false;
 
   // 1. Service Worker Registration
   if ('serviceWorker' in navigator) {
@@ -249,17 +250,88 @@
     );
   }
 
-  // Helper to detect Android
-  function isAndroid() {
-    return /Android/i.test(navigator.userAgent);
-  }
-
   // Helper to detect Mobile in general
   function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // Highly robust installation check
+  async function checkIfInstalled() {
+    // 1. Check standalone mode (if running in PWA app itself)
+    if (isStandalone()) {
+      localStorage.setItem('pwa_installed', 'true');
+      return true;
+    }
+    
+    // 2. Check localStorage persist flag
+    if (localStorage.getItem('pwa_installed') === 'true') {
+      return true;
+    }
+
+    // 3. Query navigator.getInstalledRelatedApps()
+    if ('getInstalledRelatedApps' in navigator) {
+      try {
+        const relatedApps = await (navigator as any).getInstalledRelatedApps();
+        const isAppInstalled = relatedApps.some((app: any) => app.platform === 'webapp');
+        if (isAppInstalled) {
+          localStorage.setItem('pwa_installed', 'true');
+          return true;
+        }
+      } catch (err) {
+        console.warn('PWA: Failed to query getInstalledRelatedApps:', err);
+      }
+    }
+    
+    return false;
+  }
+
+  // 2. Intercept browser install prompt at TOP-LEVEL
+  // This avoids missing the event if it fires before DOMContentLoaded
+  window.addEventListener('beforeinstallprompt', async (e) => {
+    // Prevent the default browser prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+    
+    // Perform robust installation and dismissal check
+    const alreadyInstalled = await checkIfInstalled();
+    const dismissedTime = localStorage.getItem('pwa_prompt_dismissed_time');
+    const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 7 * 24 * 60 * 60 * 1000); // 7 days grace period
+
+    if (alreadyInstalled || isDismissedRecently) {
+      console.log('PWA: Installation prompt skipped (already installed, standalone or dismissed recently)');
+      return;
+    }
+
+    // Show custom banner
+    if (isMobile()) {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) {
+        showBanner(banner);
+      } else {
+        showBannerPending = true;
+      }
+    }
+  });
+
+  // Helper to show the banner
+  function showBanner(banner: HTMLElement) {
+    banner.classList.remove('hidden');
+    // Force reflow
+    banner.offsetHeight;
+    banner.classList.add('visible');
+  }
+
+  // Helper to hide the banner
+  function hideBanner(banner: HTMLElement) {
+    banner.classList.remove('visible');
+    setTimeout(() => {
+      banner.classList.add('hidden');
+    }, 500); // Wait for transition animation to end
+  }
+
+  // Initialize PWA installer controls on DOM ready
+  function initPWAInstaller() {
     const banner = document.getElementById('pwa-install-banner');
     const installBtn = document.getElementById('pwa-install-btn');
     const dismissBtn = document.getElementById('pwa-dismiss-btn');
@@ -267,39 +339,18 @@
 
     if (!banner) return;
 
-    // Check if user already dismissed or app is already installed
-    const dismissedTime = localStorage.getItem('pwa_prompt_dismissed_time');
-    const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 7 * 24 * 60 * 60 * 1000); // 7 days grace period
-
-    if (isStandalone() || isDismissedRecently) {
-      console.log('PWA: Installation prompt skipped (standalone or dismissed recently)');
-      return;
+    // Check if showing is pending
+    if (showBannerPending) {
+      showBanner(banner);
+      showBannerPending = false;
     }
-
-    // 2. Intercept browser install prompt
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      deferredPrompt = e;
-      
-      // Show custom banner
-      // We prioritize showing it to mobile/Android users as requested, but can support all devices
-      if (isMobile()) {
-        banner.classList.remove('hidden');
-        // Force reflow
-        banner.offsetHeight;
-        banner.classList.add('visible');
-      }
-    });
 
     // 3. Install App Flow
     if (installBtn) {
       installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         
-        // Hide our custom banner
-        hideBanner();
+        hideBanner(banner);
         
         // Show the browser prompt
         deferredPrompt.prompt();
@@ -308,17 +359,19 @@
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`PWA: User response to install prompt: ${outcome}`);
         
-        // We've used the prompt, and can't use it again
+        if (outcome === 'accepted') {
+          localStorage.setItem('pwa_installed', 'true');
+        }
+        
         deferredPrompt = null;
       });
     }
 
-    // 4. Dismiss Banner Flow (Daha Sonra)
-    function dismissBanner() {
-      // Grace period of 7 days before showing again
+    // 4. Dismiss Banner Flow
+    const dismissBanner = () => {
       localStorage.setItem('pwa_prompt_dismissed_time', Date.now().toString());
-      hideBanner();
-    }
+      hideBanner(banner);
+    };
 
     if (dismissBtn) {
       dismissBtn.addEventListener('click', dismissBanner);
@@ -327,20 +380,22 @@
     if (closeBtn) {
       closeBtn.addEventListener('click', dismissBanner);
     }
+  }
 
-    function hideBanner() {
-      if (banner) {
-        banner.classList.remove('visible');
-        setTimeout(() => {
-          banner.classList.add('hidden');
-        }, 500); // Wait for transition animation to end
-      }
+  // Listen to the global appinstalled event
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA: Application installed successfully!');
+    localStorage.setItem('pwa_installed', 'true');
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) {
+      hideBanner(banner);
     }
-
-    // If already installed, make sure it's hidden
-    window.addEventListener('appinstalled', (evt) => {
-      console.log('PWA: Application installed successfully!');
-      hideBanner();
-    });
   });
+
+  // Wait for DOM to be ready before initializing button event listeners
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPWAInstaller);
+  } else {
+    initPWAInstaller();
+  }
 </script>

@@ -454,6 +454,35 @@ const { slides } = Astro.props;
       });
     }
 
+    // Keyboard navigation (ArrowLeft & ArrowRight)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore keyboard navigation if the user is typing in form inputs
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        emblaApi.scrollPrev();
+        startAutoplay();
+      } else if (e.key === 'ArrowRight') {
+        emblaApi.scrollNext();
+        startAutoplay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Clean up event listener when Embla is destroyed to avoid memory leaks
+    emblaApi.on('destroy', () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      stopAutoplay();
+    });
+
     // Thumbnails (Web hover/click)
     thumbNodes.forEach((thumb, index) => {
       thumb.addEventListener('mouseenter', () => {
