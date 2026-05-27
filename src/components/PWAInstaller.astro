@@ -277,20 +277,15 @@
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
-  // Highly robust installation check
+  // Highly robust, self-healing installation check
   async function checkIfInstalled() {
     // 1. Check standalone mode (if running in PWA app itself)
     if (isStandalone()) {
       localStorage.setItem('pwa_installed', 'true');
       return true;
     }
-    
-    // 2. Check localStorage persist flag
-    if (localStorage.getItem('pwa_installed') === 'true') {
-      return true;
-    }
 
-    // 3. Query navigator.getInstalledRelatedApps()
+    // 2. Query navigator.getInstalledRelatedApps()
     if ('getInstalledRelatedApps' in navigator) {
       try {
         const relatedApps = await (navigator as any).getInstalledRelatedApps();
@@ -298,30 +293,37 @@
         if (isAppInstalled) {
           localStorage.setItem('pwa_installed', 'true');
           return true;
+        } else {
+          // Self-healing: if the app was uninstalled, clear the stale localStorage flag!
+          localStorage.removeItem('pwa_installed');
         }
       } catch (err) {
         console.warn('PWA: Failed to query getInstalledRelatedApps:', err);
       }
     }
     
+    // 3. Fallback to localStorage flag (e.g. for browsers not supporting getInstalledRelatedApps)
+    if (localStorage.getItem('pwa_installed') === 'true') {
+      return true;
+    }
+    
     return false;
   }
 
   // 2. Intercept browser install prompt at TOP-LEVEL
-  // This avoids missing the event if it fires before DOMContentLoaded
-  window.addEventListener('beforeinstallprompt', async (e) => {
+  // This is kept strictly synchronous to prevent timing and race condition issues
+  window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the default browser prompt
     e.preventDefault();
     // Stash the event so it can be triggered later.
     deferredPrompt = e;
     
-    // Perform robust installation and dismissal check
-    const alreadyInstalled = await checkIfInstalled();
+    // Quick synchronous dismissal check
     const dismissedTime = localStorage.getItem('pwa_prompt_dismissed_time');
     const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 7 * 24 * 60 * 60 * 1000); // 7 days grace period
 
-    if (alreadyInstalled || isDismissedRecently) {
-      console.log('PWA: Installation prompt skipped (already installed, standalone or dismissed recently)');
+    if (isDismissedRecently) {
+      console.log('PWA: Installation prompt skipped (dismissed recently)');
       return;
     }
 
@@ -353,13 +355,20 @@
   }
 
   // Initialize PWA installer controls on DOM ready
-  function initPWAInstaller() {
+  async function initPWAInstaller() {
     const banner = document.getElementById('pwa-install-banner');
     const installBtn = document.getElementById('pwa-install-btn');
     const dismissBtn = document.getElementById('pwa-dismiss-btn');
     const closeBtn = document.getElementById('pwa-close-btn');
 
     if (!banner) return;
+
+    // Self-healing verification on load
+    const alreadyInstalled = await checkIfInstalled();
+    if (alreadyInstalled) {
+      hideBanner(banner);
+      return;
+    }
 
     // Check if showing is pending
     if (showBannerPending) {

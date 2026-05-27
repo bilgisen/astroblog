@@ -1,5 +1,6 @@
 {
   "id": "/",
+  "scope": "/",
   "name": "ParaAnaliz",
   "short_name": "ParaAnaliz",
   "description": "Güncel Ekonomi, Siyaset, Finans ve Analiz Haberleri",
@@ -34,5 +35,8 @@
       "url": "/manifest.json",
       "id": "/"
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  }
 }
