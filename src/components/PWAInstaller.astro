@@ -224,18 +224,9 @@
   }
 </style>
 
-<script is:inline>
-  // This part must be inline to catch the event immediately as the page loads
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('PWA: beforeinstallprompt caught (inline)');
-    e.preventDefault();
-    window.deferredPWAInstallPrompt = e;
-    window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
-  });
-</script>
-
 <script>
   let showBannerPending = false;
+
 
   // 1. Service Worker Registration
   if ('serviceWorker' in navigator) {

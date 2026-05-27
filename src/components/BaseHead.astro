@@ -69,3 +69,12 @@ const ogImageUrl = resolveImageUrl(image);
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={ogImageUrl} />
+
+<!-- PWA Catch Event Early -->
+<script is:inline>
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredPWAInstallPrompt = e;
+    window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+  });
+</script>
