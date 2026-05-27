@@ -224,46 +224,47 @@
   }
 </style>
 
+<script is:inline>
+  // This part must be inline to catch the event immediately as the page loads
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA: beforeinstallprompt caught (inline)');
+    e.preventDefault();
+    window.deferredPWAInstallPrompt = e;
+    window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+  });
+</script>
+
 <script>
-  let deferredPrompt: any = null;
   let showBannerPending = false;
 
-  // 1. Service Worker Registration with Auto-Update logic
+  // 1. Service Worker Registration
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => {
-          console.log('PWA: Service Worker registered successfully with scope:', reg.scope);
-
-          // Handle automatic reloading when an update is found and installed
+          console.log('PWA: SW registered');
+          
           reg.addEventListener('updatefound', () => {
             const installingWorker = reg.installing;
             if (installingWorker) {
               installingWorker.addEventListener('statechange', () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('PWA: New content is available; reloading page...');
                   window.location.reload();
                 }
               });
             }
           });
-        })
-        .catch((err) => {
-          console.error('PWA: Service Worker registration failed:', err);
         });
 
-      // Handle controllerchange (when the new service worker takes over)
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (refreshing) return;
         refreshing = true;
-        console.log('PWA: Service worker controller changed; refreshing...');
         window.location.reload();
       });
     });
   }
 
-  // Helper to check if running in standalone mode (PWA installed)
   function isStandalone() {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -272,85 +273,59 @@
     );
   }
 
-  // Highly robust, self-healing installation check
   async function checkIfInstalled() {
-    // 1. Check standalone mode (if running in PWA app itself)
-    if (isStandalone()) {
-      console.log('PWA: Standalone modda çalışıyor (Yüklü).');
-      localStorage.setItem('pwa_installed', 'true');
-      return true;
-    }
-
-    // 2. Query navigator.getInstalledRelatedApps()
+    if (isStandalone()) return true;
     if ('getInstalledRelatedApps' in navigator) {
       try {
         const relatedApps = await (navigator as any).getInstalledRelatedApps();
-        const isAppInstalled = relatedApps.some((app: any) => app.platform === 'webapp');
-        if (isAppInstalled) {
-          console.log('PWA: Uygulama cihazda yüklü olarak tespit edildi.');
-          localStorage.setItem('pwa_installed', 'true');
-          return true;
-        } else {
-          // Self-healing: if the app was uninstalled, clear the stale localStorage flag!
-          if (localStorage.getItem('pwa_installed') === 'true') {
-            console.log('PWA: Uygulama kaldırılmış, yerel bayrak temizleniyor.');
-            localStorage.removeItem('pwa_installed');
-          }
-        }
+        return relatedApps.some((app: any) => app.platform === 'webapp');
       } catch (err) {
-        console.warn('PWA: getInstalledRelatedApps sorgusu başarısız:', err);
+        return false;
       }
     }
-    
-    // 3. Fallback to localStorage flag
-    if (localStorage.getItem('pwa_installed') === 'true') {
-      return true;
-    }
-    
-    return false;
+    return localStorage.getItem('pwa_installed') === 'true';
   }
 
-  // 2. Intercept browser install prompt at TOP-LEVEL
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('PWA: beforeinstallprompt olayı tetiklendi.');
-    // Prevent the default browser prompt
-    e.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = e;
+  // Handle the ready event from inline script or check if already caught
+  function handlePromptReady() {
+    console.log('PWA: Prompt ready, checking visibility conditions...');
     
-    // Quick synchronous dismissal check
     const dismissedTime = localStorage.getItem('pwa_prompt_dismissed_time');
-    // Reduced grace period to 3 days for better visibility during testing
-    const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 3 * 24 * 60 * 60 * 1000); 
+    // Set to 24 hours for better visibility during active development/testing
+    const isDismissedRecently = dismissedTime && (Date.now() - parseInt(dismissedTime, 10) < 24 * 60 * 60 * 1000); 
 
     if (isDismissedRecently) {
-      console.log('PWA: Kurulum bannerı yakın zamanda kapatıldığı için gösterilmiyor.');
+      console.log('PWA: Banner recently dismissed, skipping.');
       return;
     }
 
-    // Show custom banner
     const banner = document.getElementById('pwa-install-banner');
     if (banner) {
       showBanner(banner);
     } else {
       showBannerPending = true;
     }
-  });
-
-  // Helper to show the banner
-  function showBanner(banner: HTMLElement) {
-    // Final check before showing: don't show if already installed
-    checkIfInstalled().then(isInstalled => {
-      if (!isInstalled) {
-        banner.classList.remove('hidden');
-        banner.offsetHeight; // force reflow
-        banner.classList.add('visible');
-        console.log('PWA: Kurulum bannerı gösteriliyor.');
-      }
-    });
   }
 
-  // Helper to hide the banner
+  window.addEventListener('pwa-prompt-ready', handlePromptReady);
+
+  // Helper to show the banner
+  async function showBanner(banner: HTMLElement) {
+    const isInstalled = await checkIfInstalled();
+    if (isInstalled) {
+      console.log('PWA: Already installed, not showing banner.');
+      return;
+    }
+
+    // Small delay to ensure page is visually ready
+    setTimeout(() => {
+      banner.classList.remove('hidden');
+      banner.offsetHeight; // force reflow
+      banner.classList.add('visible');
+      console.log('PWA: Banner visible now.');
+    }, 1500);
+  }
+
   function hideBanner(banner: HTMLElement) {
     banner.classList.remove('visible');
     setTimeout(() => {
@@ -358,7 +333,6 @@
     }, 500);
   }
 
-  // Initialize PWA installer controls on DOM ready
   async function initPWAInstaller() {
     const banner = document.getElementById('pwa-install-banner');
     const installBtn = document.getElementById('pwa-install-btn');
@@ -367,45 +341,27 @@
 
     if (!banner) return;
 
-    // Self-healing verification on load
-    const alreadyInstalled = await checkIfInstalled();
-    if (alreadyInstalled) {
-      console.log('PWA: Uygulama zaten yüklü, banner gizleniyor.');
-      hideBanner(banner);
-      return;
+    if (showBannerPending || (window as any).deferredPWAInstallPrompt) {
+      handlePromptReady();
     }
 
-    // Check if showing is pending from the top-level event
-    if (showBannerPending) {
-      showBanner(banner);
-      showBannerPending = false;
-    }
-
-    // 3. Install App Flow
     if (installBtn) {
       installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) {
-          console.warn('PWA: Kurulum istemi (deferredPrompt) henüz hazır değil.');
-          return;
-        }
+        const prompt = (window as any).deferredPWAInstallPrompt;
+        if (!prompt) return;
         
         hideBanner(banner);
-        deferredPrompt.prompt();
+        prompt.prompt();
         
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`PWA: Kullanıcı kurulum yanıtı: ${outcome}`);
-        
+        const { outcome } = await prompt.userChoice;
         if (outcome === 'accepted') {
           localStorage.setItem('pwa_installed', 'true');
         }
-        
-        deferredPrompt = null;
+        (window as any).deferredPWAInstallPrompt = null;
       });
     }
 
-    // 4. Dismiss Banner Flow
     const dismissBanner = () => {
-      console.log('PWA: Kullanıcı bannerı kapattı.');
       localStorage.setItem('pwa_prompt_dismissed_time', Date.now().toString());
       hideBanner(banner);
     };
@@ -414,17 +370,12 @@
     if (closeBtn) closeBtn.addEventListener('click', dismissBanner);
   }
 
-  // Listen to the global appinstalled event
   window.addEventListener('appinstalled', () => {
-    console.log('PWA: Application installed successfully!');
     localStorage.setItem('pwa_installed', 'true');
     const banner = document.getElementById('pwa-install-banner');
-    if (banner) {
-      hideBanner(banner);
-    }
+    if (banner) hideBanner(banner);
   });
 
-  // Wait for DOM to be ready before initializing button event listeners
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPWAInstaller);
   } else {
