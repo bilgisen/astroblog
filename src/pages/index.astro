@@ -330,6 +330,7 @@ function formatDate(dateStr: string | null): string {
         font-size: 1.15rem;
         font-weight: 800;
         color: var(--foreground);
+        opacity: 0.85;
         margin: 0 0 1.25rem;
         padding-bottom: 0.75rem;
         border-bottom: 1px solid var(--border);
@@ -386,8 +387,9 @@ function formatDate(dateStr: string | null): string {
       }
       .sidebar-post-author {
         font-size: 0.7rem;
-        font-weight: 800;
+        font-weight: 700;
         color: var(--primary);
+        opacity: 0.9;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin: 0 0 0.25rem;
@@ -397,12 +399,16 @@ function formatDate(dateStr: string | null): string {
         font-weight: 700;
         line-height: 1.35;
         color: var(--foreground);
-        transition: color 0.2s;
+        opacity: 0.85;
+        transition: color 0.2s, opacity 0.2s;
         margin: 0 0 0.3rem;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+      }
+      .sidebar-post:hover .sidebar-post-title {
+        opacity: 1;
       }
       .sidebar-post-date {
         font-size: 0.75rem;
