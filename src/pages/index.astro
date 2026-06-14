@@ -337,6 +337,22 @@ function formatDate(dateStr: string | null): string {
         padding: 1.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
+      .sidebar-banner {
+        display: block;
+        margin: -1.5rem -1.5rem 1.5rem;
+        border-radius: 16px 16px 0 0;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-banner img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      .sidebar-banner:hover img {
+        transform: scale(1.02);
+      }
       .sidebar-title {
         font-size: 1.15rem;
         font-weight: 700;
@@ -517,6 +533,9 @@ function formatDate(dateStr: string | null): string {
 
         <!-- Sağ: Blog sidebar -->
         <aside class="sidebar">
+          <a href="https://sanatif.com.tr/urun/12-para-terapi-kampi-dr-cuneyt-akman-atilla-yesilada-baris-soydan-durmus-yilmaz-ve-dr-emre-akanak-23-26-agustos-2026-hattusa-kazdaglari/" target="_blank" rel="noopener noreferrer" class="sidebar-banner">
+            <img src="https://sanatif.com.tr/wp-content/uploads/2026/04/Ekonomik-terapi-kampi-1.png" alt="Para Terapi Kampı" width="300" height="375" />
+          </a>
           <h2 class="sidebar-title">Son Blog Yazıları</h2>
           {blogs.map((post) => {
             const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
