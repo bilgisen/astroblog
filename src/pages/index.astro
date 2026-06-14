@@ -22,13 +22,21 @@ try {
   // Fetch latest news, blog posts, and ParaAnaliz YouTube videos concurrently
   const [newsData, blogData, videos] = await Promise.all([
     fetchNewsList(1, 60, 26),
-    fetchBlogList(1, 6),
+    fetchBlogList(1, 20),
     fetchParaAnalizVideos(),
   ]);
   
   ytVideos = videos;
   const latestNewsDocs = newsData.docs;
-  blogs = blogData.docs;
+  
+  // Filter for unique authors to show only their latest blog post
+  const uniqueAuthors = new Map<number, BlogItem>();
+  blogData.docs.forEach(post => {
+    if (post.author && !uniqueAuthors.has(post.author.id)) {
+      uniqueAuthors.set(post.author.id, post);
+    }
+  });
+  blogs = Array.from(uniqueAuthors.values()).slice(0, 6);
 
   // Fetch slide-tagged news items for exact slot positioning
   let taggedNewsDocs: NewsItem[] = [];
@@ -398,7 +406,7 @@ function formatDate(dateStr: string | null): string {
         margin: 0 0 0.25rem;
       }
       .sidebar-post-title {
-        font-size: 0.9rem;
+        font-size: 1.05rem;
         font-weight: 700;
         line-height: 1.35;
         color: var(--foreground);
@@ -406,7 +414,7 @@ function formatDate(dateStr: string | null): string {
         transition: color 0.2s, opacity 0.2s;
         margin: 0 0 0.3rem;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
