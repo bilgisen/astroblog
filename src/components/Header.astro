@@ -14,7 +14,6 @@ import Logo from './Logo.astro';
 				<HeaderLink href="/haberler">Haberler</HeaderLink>
 				<HeaderLink href="/blog">Yazarlar</HeaderLink>
 				<HeaderLink href="https://pamagaza.com/" target="_blank" rel="noopener noreferrer">Store</HeaderLink>
-				<HeaderLink href="https://pamagaza.com/" target="_blank" rel="noopener noreferrer" class="aida-reports-link">Aida Reports</HeaderLink>
 			</div>
 			<div class="social-links">
 				<!-- X (Twitter) -->
@@ -54,7 +53,6 @@ import Logo from './Logo.astro';
 			<HeaderLink href="/haberler">Haberler</HeaderLink>
 			<HeaderLink href="/blog">Yazarlar</HeaderLink>
 			<HeaderLink href="https://pamagaza.com/" target="_blank" rel="noopener noreferrer">Store</HeaderLink>
-			<HeaderLink href="https://pamagaza.com/" target="_blank" rel="noopener noreferrer" class="aida-reports-link">Aida Reports</HeaderLink>
 			<hr />
 			<div class="mobile-socials">
 				<a href="https://twitter.com/paraanaliz" target="_blank">X (Twitter)</a>
@@ -114,21 +112,6 @@ import Logo from './Logo.astro';
 	.internal-links {
 		display: flex;
 		gap: 0.5rem;
-	}
-	.aida-reports-link {
-		font-weight: 800 !important;
-		background: linear-gradient(135deg, #ff007f, #7f00ff, #00f0ff, #ff007f);
-		background-size: 300% 300%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-animation 6s ease infinite;
-		text-shadow: 0 0 1px rgba(127, 0, 255, 0.1);
-	}
-	@keyframes gradient-animation {
-		0% { background-position: 0% 50%; }
-		50% { background-position: 100% 50%; }
-		100% { background-position: 0% 50%; }
 	}
 	.social-links {
 		display: flex;
