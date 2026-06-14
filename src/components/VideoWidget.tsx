@@ -136,8 +136,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         .widget-title {
           font-size: 1.1rem;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--foreground);
+          opacity: 0.9;
           margin: 0;
           letter-spacing: -0.02em;
           text-transform: uppercase;
