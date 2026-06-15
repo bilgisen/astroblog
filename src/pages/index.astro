@@ -459,12 +459,18 @@ function formatDate(dateStr: string | null): string {
         background: var(--border);
       }
 
-      @media (max-width: 1100px) {
-        .page-layout { grid-template-columns: 1fr 260px; }
-      }
       @media (max-width: 960px) {
-        .page-layout { grid-template-columns: 1fr; }
-        .sidebar { position: static; border-top: 1px solid rgb(var(--gray-light)); padding-top: 2rem; }
+        .page-layout { 
+          grid-template-columns: 1fr; 
+          display: flex;
+          flex-direction: column;
+        }
+        .sidebar { 
+          order: -1;
+          margin-bottom: 2rem;
+          position: static; 
+          padding-top: 2rem; 
+        }
       }
     </style>
   </head>
