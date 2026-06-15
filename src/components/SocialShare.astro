@@ -32,9 +32,10 @@ const { title, url } = Astro.props;
 
 <style>
   .share-container {
+    margin-top: 3rem;
     margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
     position: relative;
   }
   .share-btn {
@@ -42,10 +43,10 @@ const { title, url } = Astro.props;
     align-items: center;
     gap: 0.75rem;
     padding: 0.6rem 1.25rem;
-    background: var(--muted);
+    background: transparent;
     color: var(--foreground);
     border: 1px solid var(--border);
-    border-radius: 99px;
+    border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;

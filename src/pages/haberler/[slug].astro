@@ -114,6 +114,13 @@ function formatDate(dateStr: string | null): string {
         border-left: 4px solid var(--border);
         padding-left: 1.5rem;
       }
+      .content-date {
+        font-size: 0.85rem;
+        color: var(--muted-foreground);
+        margin-bottom: 1rem;
+        font-weight: 600;
+        opacity: 0.8;
+      }
       .content {
         font-size: 1.125rem;
         line-height: 1.8;
@@ -299,14 +306,25 @@ function formatDate(dateStr: string | null): string {
                 </div>
               )}
 
-              <SocialShare title={news.title} url={shareUrl} />
+              {news.publishedAt && (
+                <div class="content-date">
+                  {formatDate(news.publishedAt)}
+                </div>
+              )}
 
               <div class="content" set:html={bodyHtml} />
+
+              <SocialShare title={news.title} url={shareUrl} />
 
               <div style="margin-top: 3.5rem;">
                 <GoogleNewsBanner />
               </div>
             </article>
+
+            <!-- Video Widget Section -->
+            <div style="margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;">
+              <VideoWidget client:load initialVideos={ytVideos} />
+            </div>
 
             {latestNews.length > 0 && (
               <section class="latest-news-section">
@@ -326,11 +344,6 @@ function formatDate(dateStr: string | null): string {
                 </div>
               </section>
             )}
-
-            <!-- Video Widget Section -->
-            <div style="margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;">
-              <VideoWidget client:load initialVideos={ytVideos} />
-            </div>
           </>
         )}
       </div>
