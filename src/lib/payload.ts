@@ -89,11 +89,14 @@ export interface NewsListResponse {
 export async function fetchNewsList(
   page = 1,
   limit = 20,
-  excludeCategoryId?: number
+  excludeCategoryIds?: number | number[]
 ): Promise<NewsListResponse> {
   let endpoint = `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`;
-  if (excludeCategoryId) {
-    endpoint += `&where[category][not_equals]=${excludeCategoryId}`;
+  if (excludeCategoryIds) {
+    const ids = Array.isArray(excludeCategoryIds) ? excludeCategoryIds : [excludeCategoryIds];
+    ids.forEach((id, index) => {
+      endpoint += `&where[category][not_equals]=${id}`;
+    });
   }
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
 }
