@@ -94,9 +94,11 @@ export async function fetchNewsList(
   let endpoint = `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}`;
   if (excludeCategoryIds) {
     const ids = Array.isArray(excludeCategoryIds) ? excludeCategoryIds : [excludeCategoryIds];
-    ids.forEach((id, index) => {
-      endpoint += `&where[category][not_equals]=${id}`;
-    });
+    if (ids.length === 1) {
+      endpoint += `&where[category][not_equals]=${ids[0]}`;
+    } else if (ids.length > 1) {
+      endpoint += `&where[category][not_in]=${ids.join(',')}`;
+    }
   }
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
 }

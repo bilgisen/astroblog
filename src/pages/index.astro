@@ -21,7 +21,7 @@ let error: string | null = null;
 try {
   // Fetch latest news, blog posts, and ParaAnaliz YouTube videos concurrently
   const [newsData, blogData, videos] = await Promise.all([
-    fetchNewsList(1, 60, 26),
+    fetchNewsList(1, 60, [26, 28]),
     fetchBlogList(1, 20),
     fetchParaAnalizVideos(),
   ]);
@@ -42,7 +42,7 @@ try {
   let taggedNewsDocs: NewsItem[] = [];
   try {
     const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`).join(',');
-    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&where[category][not_equals]=26&where[category][not_equals]=28&limit=30`) as NewsListResponse;
+    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&where[category][not_in]=26,28&limit=30`) as NewsListResponse;
     taggedNewsDocs = taggedRes.docs;
   } catch (err) {
     console.error("Error fetching tagged slider items:", err);
