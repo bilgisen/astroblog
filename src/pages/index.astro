@@ -42,7 +42,8 @@ try {
   let taggedNewsDocs: NewsItem[] = [];
   try {
     const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`).join(',');
-    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&where[category][not_in]=26,28&limit=30`) as NewsListResponse;
+    // Payload explicit array syntax for not_in to ensure exclusion
+    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&where[category][not_in][]=26&where[category][not_in][]=28&limit=30`) as NewsListResponse;
     taggedNewsDocs = taggedRes.docs;
   } catch (err) {
     console.error("Error fetching tagged slider items:", err);
@@ -50,8 +51,12 @@ try {
 
   // Combine and sort candidates by publish date descending
   const allCandidatesMap = new Map<number, NewsItem>();
-  latestNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
-  taggedNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
+  
+  // Robust client-side filtering as a fallback to API-level exclusion
+  const filterAds = (item: NewsItem) => item.category && item.category.id !== 26 && item.category.id !== 28;
+
+  latestNewsDocs.filter(filterAds).forEach(item => allCandidatesMap.set(item.id, item));
+  taggedNewsDocs.filter(filterAds).forEach(item => allCandidatesMap.set(item.id, item));
 
   const sortedCandidates = Array.from(allCandidatesMap.values()).sort((a, b) => {
     const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;

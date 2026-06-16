@@ -97,7 +97,10 @@ export async function fetchNewsList(
     if (ids.length === 1) {
       endpoint += `&where[category][not_equals]=${ids[0]}`;
     } else if (ids.length > 1) {
-      endpoint += `&where[category][not_in]=${ids.join(',')}`;
+      // Payload explicit array syntax for not_in
+      ids.forEach((id) => {
+        endpoint += `&where[category][not_in][]=${id}`;
+      });
     }
   }
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
