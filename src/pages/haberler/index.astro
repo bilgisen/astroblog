@@ -9,7 +9,7 @@ let news: NewsItem[] = [];
 let error: string | null = null;
 
 try {
-  const data = await fetchNewsList(1, 100); // Fetch a larger batch for client-side load more
+  const data = await fetchNewsList(1, 100, 26); // Fetch a larger batch for client-side load more, excluding reklam (26)
   news = data.docs;
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
