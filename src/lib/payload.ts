@@ -11,7 +11,7 @@
 import { env as cfEnv } from 'cloudflare:workers';
 
 const PUBLIC_API_URL =
-  import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
+  import.meta.env.PAYLOAD_API_URL ?? 'https://admin.paraanaliz.com';
 
 /**
  * Core fetch helper.
@@ -25,7 +25,7 @@ export async function fetchFromPayload(endpoint: string): Promise<unknown> {
 
   if (paback) {
     // Production: Service Binding — direct Worker-to-Worker call
-    res = await paback.fetch(`http://paback${endpoint}`);
+    res = await paback.fetch(`http://admin${endpoint}`);
   } else {
     // Local dev: public URL
     res = await fetch(`${PUBLIC_API_URL}${endpoint}`);
@@ -134,18 +134,18 @@ export async function fetchNewsBySlug(slug: string): Promise<NewsItem | null> {
  * Resolve the full image URL.
  * In production, proxies through /media/ endpoint so OG images
  * are served from the frontend domain (paraanaliz.com) instead of
- * paback.paraanaliz.workers.dev — required for social media crawlers.
+ * admin.paraanaliz.com — required for social media crawlers.
  */
 export function resolveMediaUrl(url: string): string {
   if (!url) return '';
   // Already a full external URL (not Payload relative)
-  if (url.startsWith('http') && !url.includes('paback.paraanaliz.workers.dev')) {
+  if (url.startsWith('http') && !url.includes('admin.paraanaliz.com')) {
     return url;
   }
   // Payload relative path: /api/media/file/xxx.jpg
   const path = url.startsWith('/') ? url.slice(1) : url;
-  // Strip the paback domain if present
-  const cleanPath = path.replace('https://paback.paraanaliz.workers.dev/', '');
+  // Strip the admin domain if present
+  const cleanPath = path.replace('https://admin.paraanaliz.com/', '');
   return `/media/${cleanPath}`;
 }
 

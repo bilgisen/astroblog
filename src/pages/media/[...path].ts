@@ -1,10 +1,10 @@
 /**
  * Media proxy endpoint.
  * Proxies Payload CMS media files through the frontend domain.
- * 
+ *
  * Usage: /media/api/media/file/image.jpg
- * Proxies to: https://paback.paraanaliz.workers.dev/api/media/file/image.jpg
- * 
+ * Proxies to: https://admin.paraanaliz.com/api/media/file/image.jpg
+ *
  * This ensures OG images are served from paraanaliz.com domain,
  * which social media crawlers can reliably access.
  */
@@ -13,7 +13,7 @@ import type { APIRoute } from 'astro';
 import { env as cfEnv } from 'cloudflare:workers';
 
 const PUBLIC_API_URL =
-  import.meta.env.PAYLOAD_API_URL ?? 'https://paback.paraanaliz.workers.dev';
+  import.meta.env.PAYLOAD_API_URL ?? 'https://admin.paraanaliz.com';
 
 export const GET: APIRoute = async ({ params }) => {
   const path = params.path;
@@ -26,9 +26,9 @@ export const GET: APIRoute = async ({ params }) => {
     let res: Response;
 
     if (paback) {
-      res = await paback.fetch(`http://paback/${path}`);
+      res = await paback.fetch(http://admin/);
     } else {
-      res = await fetch(`${PUBLIC_API_URL}/${path}`);
+      res = await fetch(${PUBLIC_API_URL}/);
     }
 
     if (!res.ok) {
