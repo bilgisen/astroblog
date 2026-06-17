@@ -103,19 +103,18 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
       <style>{`
         .video-widget {
           margin: 2.5rem 0;
-          background: var(--card);
-          border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+          padding: 0; /* Removed padding for non-card look */
+          background: transparent; /* Removed card background */
+          border: none; /* Removed border */
+          box-shadow: none; /* Removed shadow */
         }
 
         .widget-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1.25rem;
-          border-bottom: 1px solid var(--border);
+          margin-bottom: 1.5rem;
+          border-bottom: 2px solid var(--primary); /* Use primary color for divider */
           padding-bottom: 0.75rem;
         }
 
@@ -136,9 +135,8 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         .widget-title {
           font-size: 1.1rem;
-          font-weight: 700;
+          font-weight: 800;
           color: var(--foreground);
-          opacity: 0.9;
           margin: 0;
           letter-spacing: -0.02em;
           text-transform: uppercase;
@@ -159,20 +157,20 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         .widget-grid {
           display: grid;
           grid-template-columns: 1.6fr 1fr;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
 
         .main-player {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 1rem;
         }
 
         .iframe-wrapper {
           position: relative;
           width: 100%;
           aspect-ratio: 16 / 9;
-          border-radius: 10px;
+          border-radius: 12px;
           overflow: hidden;
           background: #000;
         }
@@ -186,9 +184,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         }
 
         .main-player .video-title {
-          font-size: 1.1rem;
-          font-weight: 700;
-          line-height: 1.3;
+          font-size: 1.25rem;
+          font-weight: 800;
+          line-height: 1.2;
           color: var(--foreground);
           margin: 0;
           letter-spacing: -0.02em;
@@ -198,8 +196,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          font-size: 0.75rem;
+          font-size: 0.8rem;
           color: var(--muted-foreground);
+          font-weight: 600;
         }
 
         .bullet {
@@ -210,17 +209,17 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
           display: flex;
           flex-direction: column;
           background: var(--muted);
-          border-radius: 10px;
-          padding: 0.75rem;
+          border-radius: 12px;
+          padding: 1rem;
           border: 1px solid var(--border);
-          max-height: 330px;
+          max-height: 400px;
         }
 
         .playlist-header {
           font-size: 0.75rem;
           font-weight: 800;
           color: var(--muted-foreground);
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.75rem;
           letter-spacing: 0.05em;
           padding-left: 0.25rem;
         }
@@ -228,9 +227,8 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         .playlist-items {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.75rem;
           overflow-y: auto;
-          padding-right: 0.25rem;
         }
 
         /* Custom scrollbar */
@@ -247,9 +245,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         .playlist-item {
           display: flex;
-          gap: 0.5rem;
-          padding: 0.4rem;
-          border-radius: 6px;
+          gap: 0.75rem;
+          padding: 0.5rem;
+          border-radius: 8px;
           border: 1px solid transparent;
           background: transparent;
           cursor: pointer;
@@ -275,9 +273,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         .thumb-wrapper {
           position: relative;
-          width: 70px;
+          width: 100px;
           aspect-ratio: 16 / 9;
-          border-radius: 4px;
+          border-radius: 6px;
           overflow: hidden;
           background: #000;
           flex-shrink: 0;
@@ -291,14 +289,14 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         .playlist-item .duration {
           position: absolute;
-          bottom: 1px;
-          right: 2px;
+          bottom: 2px;
+          right: 3px;
           background: rgba(0, 0, 0, 0.8);
           color: #fff;
-          font-size: 0.6rem;
+          font-size: 0.65rem;
           font-weight: 700;
-          padding: 0px 2px;
-          border-radius: 2px;
+          padding: 0px 4px;
+          border-radius: 3px;
         }
 
         .item-info {
@@ -308,7 +306,7 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         }
 
         .item-title {
-          font-size: 0.75rem;
+          font-size: 0.85rem;
           font-weight: 700;
           line-height: 1.3;
           color: var(--foreground);
@@ -320,9 +318,9 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
         }
 
         .item-date {
-          font-size: 0.65rem;
+          font-size: 0.7rem;
           color: var(--muted-foreground);
-          margin-top: 0.15rem;
+          margin-top: 0.25rem;
         }
 
         @keyframes pulse {
@@ -332,13 +330,25 @@ export default function VideoWidget({ initialVideos }: VideoWidgetProps) {
 
         @media (max-width: 768px) {
           .video-widget {
-            padding: 1rem;
-            margin: 1.5rem 0;
+            margin: 2rem 0;
           }
 
           .widget-grid {
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 1.5rem;
+          }
+
+          .main-player .video-title {
+            font-size: 1.15rem;
+          }
+
+          .playlist {
+            padding: 0.75rem;
+            max-height: 350px;
+          }
+
+          .thumb-wrapper {
+            width: 120px; /* Make thumbnail slightly larger on mobile for readability */
           }
         }
       `}</style>
