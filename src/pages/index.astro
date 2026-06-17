@@ -21,7 +21,7 @@ let error: string | null = null;
 try {
   // Fetch latest news, blog posts, and ParaAnaliz YouTube videos concurrently
   const [newsData, blogData, videos] = await Promise.all([
-    fetchNewsList(1, 60, [26, 28]),
+    fetchNewsList(1, 60, [28]),
     fetchBlogList(1, 20),
     fetchParaAnalizVideos(),
   ]);
@@ -42,7 +42,7 @@ try {
   let taggedNewsDocs: NewsItem[] = [];
   try {
     const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
-    let endpoint = `/api/news?limit=30&where[category][not_in][]=26&where[category][not_in][]=28`;
+    let endpoint = `/api/news?limit=30&where[category][not_in][]=28`;
     slideSlugs.forEach(slug => {
       endpoint += `&where[tags.slug][in][]=${slug}`;
     });
@@ -58,7 +58,7 @@ try {
   const allCandidatesMap = new Map<number, NewsItem>();
   
   // Robust client-side filtering as a fallback to API-level exclusion
-  const filterAds = (item: NewsItem) => item.category && item.category.id !== 26 && item.category.id !== 28;
+  const filterAds = (item: NewsItem) => item.category && item.category.id !== 28;
 
   latestNewsDocs.filter(filterAds).forEach(item => allCandidatesMap.set(item.id, item));
   taggedNewsDocs.filter(filterAds).forEach(item => allCandidatesMap.set(item.id, item));
