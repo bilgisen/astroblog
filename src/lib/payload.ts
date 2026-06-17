@@ -57,6 +57,12 @@ export interface NewsFeaturedImage {
   height: number;
 }
 
+export interface NewsTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;
@@ -64,6 +70,7 @@ export interface NewsItem {
   body: unknown; // Lexical rich text — rendered separately
   category: NewsCategory;
   author: NewsAuthor;
+  tags?: NewsTag[];
   featuredImage: NewsFeaturedImage | null;
   publishedAt: string | null;
   updatedAt: string;

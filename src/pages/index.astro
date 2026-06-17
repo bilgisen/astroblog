@@ -87,7 +87,12 @@ try {
   // Fill empty slots with untagged/unplaced latest news
   for (let i = 0; i < 10; i++) {
     if (!slides[i]) {
-      const nextAvailable = sortedCandidates.find(item => !placedIds.has(item.id));
+      // Find next available item that DOES NOT have any slide-XX tag
+      const nextAvailable = sortedCandidates.find(item => {
+        if (placedIds.has(item.id)) return false;
+        const hasSlideTag = item.tags?.some(t => /^slide-\d+$/.test(t.slug));
+        return !hasSlideTag;
+      });
       if (nextAvailable) {
         slides[i] = nextAvailable;
         placedIds.add(nextAvailable.id);
