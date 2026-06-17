@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Payload CMS API client.
  *
  * Production (Cloudflare Workers): uses PABACK Service Binding via
@@ -41,6 +41,15 @@ export interface NewsAuthor {
   id: number;
   name: string;
   slug: string;
+  shortBio?: string | null;
+  longBio?: any;
+  socialLinks?: {
+    twitter?: string | null;
+    instagram?: string | null;
+    linkedin?: string | null;
+    facebook?: string | null;
+    youtube?: string | null;
+  };
 }
 
 export interface NewsCategory {
@@ -255,7 +264,7 @@ export async function fetchBlogBySlug(slug: string): Promise<BlogItem | null> {
  * - https://www.youtube.com/embed/VIDEO_ID
  * Returns null if not a YouTube URL.
  */
-function getYouTubeEmbedId(url: string): string | null {
+export function getYouTubeEmbedId(url: string): string | null {
   try {
     const u = new URL(url);
     // youtu.be/VIDEO_ID
