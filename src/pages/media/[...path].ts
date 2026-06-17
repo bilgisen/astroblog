@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Media proxy endpoint.
  * Proxies Payload CMS media files through the frontend domain.
  *
@@ -22,13 +22,16 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   try {
-    const paback = (cfEnv as unknown as { PABACK?: Fetcher }).PABACK;
+    // @ts-ignore
+    const paback = (cfEnv as any).PABACK;
     let res: Response;
 
     if (paback) {
-      res = await paback.fetch(http://admin/);
+      // Production: Service Binding
+      res = await paback.fetch(`http://admin/${path}`);
     } else {
-      res = await fetch(${PUBLIC_API_URL}/);
+      // Local dev: Public URL
+      res = await fetch(`${PUBLIC_API_URL}/${path}`);
     }
 
     if (!res.ok) {
@@ -45,7 +48,8 @@ export const GET: APIRoute = async ({ params }) => {
         'cache-control': 'public, max-age=86400',
       },
     });
-  } catch {
+  } catch (err) {
+    console.error('Media proxy error:', err);
     return new Response('Error', { status: 500 });
   }
 };
