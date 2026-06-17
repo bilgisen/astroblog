@@ -5,31 +5,50 @@ import Header from '../../components/Header.astro';
 import GoogleNewsBanner from '../../components/GoogleNewsBanner.astro';
 import SocialShare from '../../components/SocialShare.astro';
 import VideoWidget from '../../components/VideoWidget';
+import SidebarSlider from '../../components/SidebarSlider.astro';
 import { fetchParaAnalizVideos } from '../../lib/youtube';
 import type { VideoItem } from '../../lib/youtube';
-import { fetchNewsBySlug, fetchNewsList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml } from '../../lib/payload';
-import type { NewsItem } from '../../lib/payload';
-
-// SSR mode — no getStaticPaths needed, every request fetches live data
+import { fetchNewsBySlug, fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml, fetchFromPayload } from '../../lib/payload';
+import type { NewsItem, BlogItem, NewsListResponse } from '../../lib/payload';
 
 const { slug } = Astro.params;
 
 let news: NewsItem | null = null;
-let latestNews: NewsItem[] = [];
+let sliderSlides: NewsItem[] = [];
+let blogs: BlogItem[] = [];
 let ytVideos: VideoItem[] = [];
 let error: string | null = null;
 
 try {
-  const [newsData, latestData, videos] = await Promise.all([
+  const [newsData, blogData, videos] = await Promise.all([
     fetchNewsBySlug(slug!),
-    fetchNewsList(1, 11), // Fetch 11 to account for current post
+    fetchBlogList(1, 6),
     fetchParaAnalizVideos(),
   ]);
   
   news = newsData;
-  latestNews = latestData.docs.filter(item => item.slug !== slug).slice(0, 10);
   ytVideos = videos;
   
+  // Filter for unique authors for blog sidebar
+  const uniqueAuthors = new Map<number, BlogItem>();
+  blogData.docs.forEach(post => {
+    if (post.author && !uniqueAuthors.has(post.author.id)) {
+      uniqueAuthors.set(post.author.id, post);
+    }
+  });
+  blogs = Array.from(uniqueAuthors.values()).slice(0, 6);
+
+  // Fetch slider news (same logic as home page but maybe fewer)
+  try {
+    const slideSlugs = Array.from({ length: 5 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
+    let endpoint = `/api/news?limit=5&where[category][not_in][]=28`;
+    slideSlugs.forEach(s => endpoint += `&where[tags.slug][in][]=${s}`);
+    const taggedRes = await fetchFromPayload(endpoint) as NewsListResponse;
+    sliderSlides = taggedRes.docs;
+  } catch (err) {
+    console.error("Sidebar slider fetch error:", err);
+  }
+
   if (!news) error = 'Haber bulunamadı.';
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haber yüklenemedi.';
@@ -38,15 +57,12 @@ try {
 const imageUrl = news?.featuredImage ? resolveMediaUrl(news.featuredImage.url) : null;
 const description = news?.seo?.metaDescription ?? lexicalToPlainText(news?.body).slice(0, 160);
 const shareUrl = `https://paraanaliz.com/haberler/${slug}`;
-
 const bodyHtml = news ? lexicalToHtml(news.body) : '';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('tr-TR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 ---
@@ -60,292 +76,213 @@ function formatDate(dateStr: string | null): string {
       image={imageUrl ?? undefined}
     />
     <style>
+      .page-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 3rem;
+        margin-top: 2rem;
+        align-items: start;
+      }
+
+      /* Main Column */
+      .main-column {
+        min-width: 0; /* Fix flex/grid overflow */
+      }
+
       .hero-image {
-        width: 100vw;
-        margin-left: calc(-50vw + 50%);
-        margin-right: calc(-50vw + 50%);
-        margin-bottom: 2.5rem;
+        width: 100%;
+        border-radius: 16px;
         overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       }
       .hero-image img {
         width: 100%;
-        max-height: 600px;
-        object-fit: cover;
+        height: auto;
         display: block;
       }
-      .prose {
-        width: 720px;
-        max-width: 100%;
-        margin: auto;
-        padding: 0 1.25rem 4rem;
+
+      .article-header {
+        margin-bottom: 2.5rem;
       }
-      .article-meta {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 0.9rem;
-        color: var(--muted-foreground);
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-      }
-      .article-meta .category {
-        color: var(--primary);
+
+      .category-tag {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        color: var(--primary);
+        letter-spacing: 0.1em;
+        margin-bottom: 1rem;
       }
-      .article-meta .author {
-        color: var(--foreground);
-      }
+
       h1 {
         font-size: 2.75rem;
-        font-weight: 700;
-        line-height: 1.1;
+        font-weight: 800;
+        line-height: 1.15;
         letter-spacing: -0.04em;
         color: var(--foreground);
-        opacity: 0.9;
         margin-bottom: 1.5rem;
       }
+
       .excerpt {
         font-size: 1.25rem;
         line-height: 1.6;
         color: var(--muted-foreground);
         margin-bottom: 2rem;
         font-weight: 500;
-        border-left: 4px solid var(--border);
+        border-left: 4px solid var(--primary);
         padding-left: 1.5rem;
       }
-      .content-date {
+
+      .meta-info {
         font-size: 0.85rem;
         color: var(--muted-foreground);
-        margin-bottom: 1rem;
         font-weight: 600;
-        opacity: 0.8;
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
       }
+
       .content {
-        font-size: 1.125rem;
+        font-size: 1.15rem;
         line-height: 1.8;
         color: var(--foreground);
-        overflow-wrap: break-word;
-        word-wrap: break-word;
       }
-      .content :global(p) {
-        margin-bottom: 1.75rem;
+      .content :global(p) { margin-bottom: 1.75rem; }
+      .content :global(h2) { font-size: 1.8rem; font-weight: 800; margin: 2.5rem 0 1.25rem; }
+      .content :global(img) { border-radius: 12px; margin: 2rem auto; display: block; max-width: 100%; }
+
+      /* Sidebar */
+      .sidebar {
+        position: sticky;
+        top: 6rem;
       }
-      .content :global(h2) {
-        font-size: 1.85rem;
-        margin-top: 2.5rem;
-        margin-bottom: 1.25rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: var(--foreground);
-        opacity: 0.85;
+
+      .sidebar-section {
+        margin-bottom: 3rem;
       }
-      .content :global(h3) {
-        font-size: 1.5rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        color: var(--foreground);
-        opacity: 0.85;
-      }
-      .content :global(img) {
-        max-width: 100%;
-        height: auto;
-        border-radius: 12px;
-        display: block;
-        margin: 0 auto;
-      }
-      .content :global(.content-image),
-      .content :global(figure) {
-        margin: 2.5rem 0;
-        text-align: center;
-      }
-      .content :global(pre),
-      .content :global(table) {
-        max-width: 100%;
-        overflow-x: auto;
-      }
-      .back-link {
-        display: inline-flex;
-        align-items: center;
-        margin-bottom: 2rem;
-        color: var(--primary);
-        font-size: 0.95rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: opacity 0.2s;
-      }
-      .back-link:hover { opacity: 0.8; }
-      
-      /* Latest News Section */
-      .latest-news-section {
-        margin-top: 6rem;
-        padding-top: 4rem;
-        border-top: 1px solid var(--border);
-      }
-      .section-title {
-        font-size: 1.5rem;
+
+      .sidebar-title {
+        font-size: 1.1rem;
         font-weight: 800;
-        margin-bottom: 2.5rem;
-        letter-spacing: -0.04em;
         text-transform: uppercase;
-        color: var(--foreground);
-        opacity: 0.9;
+        letter-spacing: 0.05em;
+        border-bottom: 3px solid var(--primary);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
       }
-      .latest-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 2.5rem;
+
+      .sidebar-banner {
+        display: block;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
       }
-      .latest-card {
+      .sidebar-banner img { width: 100%; height: auto; }
+
+      .sidebar-post {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
         text-decoration: none;
         color: inherit;
-        display: flex;
-        flex-direction: column;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 1.5rem;
-        transition: opacity 0.2s;
+        align-items: center;
       }
-      .latest-card:hover { opacity: 0.8; }
-      .latest-card img {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 1rem;
+      .sidebar-post-img {
+        width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+        border: 2px solid var(--border);
       }
-      .latest-card h3 {
-        font-size: 1.15rem;
-        font-weight: 700;
-        line-height: 1.3;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.02em;
-      }
-      .latest-card p {
-        font-size: 0.9rem;
-        color: var(--muted-foreground);
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
+      .sidebar-post-content { flex: 1; }
+      .sidebar-post-author { font-size: 0.7rem; font-weight: 700; color: var(--primary); text-transform: uppercase; }
+      .sidebar-post-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-      .error-message {
-        color: var(--destructive);
-        padding: 1rem;
-        border: 1px solid var(--destructive);
-        border-radius: 8px;
-        background: var(--muted);
-      }
-
-      @media (max-width: 720px) {
-        :global(main) {
-          padding: 1rem 0.5rem !important;
-          max-width: 100% !important;
-        }
-        h1 {
-          font-size: 1.75rem;
-          line-height: 1.1;
-        }
-        .excerpt {
-          font-size: 1.1rem;
-        }
-        .hero-image {
-          width: calc(100% + 1rem);
-          margin-left: -0.5rem;
-          margin-right: -0.5rem;
-          margin-bottom: 1.5rem;
-        }
-        .prose {
-          padding: 0 0.5rem 3rem;
-          overflow-x: hidden;
-        }
-        .latest-grid {
-          grid-template-columns: 1fr;
-          gap: 2rem;
-        }
-        .latest-card img {
-          display: none; /* Keep it extra clean on mobile as per organic feed style */
-        }
+      @media (max-width: 960px) {
+        .page-layout { grid-template-columns: 1fr; gap: 2rem; }
+        .sidebar { position: static; }
+        h1 { font-size: 2rem; }
       }
     </style>
   </head>
   <body>
     <Header />
     <main>
-      <div class="prose">
-        {error && <p class="error-message">⚠️ {error}</p>}
-
-        {news && (
-          <>
+      <div class="page-layout">
+        <!-- Main Column -->
+        <div class="main-column">
+          {error && <p style="color:red">{error}</p>}
+          {news && (
             <article>
-              {imageUrl && (
-                <div class="hero-image">
-                  <img
-                    src={imageUrl}
-                    alt={news.featuredImage?.alt ?? news.title}
-                    width={news.featuredImage?.width ?? 1200}
-                    height={news.featuredImage?.height ?? 675}
-                  />
+              <div class="article-header">
+                {news.category && <span class="category-tag">{news.category.name}</span>}
+                <h1>{news.title}</h1>
+                {description && <div class="excerpt">{description}</div>}
+                <div class="meta-info">
+                  <span>{news.author?.name}</span>
+                  {news.publishedAt && <span>{formatDate(news.publishedAt)}</span>}
                 </div>
-              )}
-
-              <div class="article-meta">
-                {news.category && news.category.id !== 26 && news.category.name.toLowerCase() !== 'advertorial' && (
-                  <span class="category">{news.category.name}</span>
-                )}
+                <SocialShare title={news.title} url={shareUrl} />
               </div>
 
-              <h1>{news.title}</h1>
-
-              {description && (
-                <div class="excerpt">
-                  {description}
-                </div>
-              )}
-
-              {news.publishedAt && (
-                <div class="content-date">
-                  {formatDate(news.publishedAt)}
+              {imageUrl && (
+                <div class="hero-image">
+                  <img src={imageUrl} alt={news.title} />
                 </div>
               )}
 
               <div class="content" set:html={bodyHtml} />
 
-              <SocialShare title={news.title} url={shareUrl} />
-
-              <div style="margin-top: 3.5rem;">
+              <div style="margin: 4rem 0;">
                 <GoogleNewsBanner />
               </div>
+
+              <!-- Paraanaliz TV -->
+              <div style="margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;">
+                <VideoWidget client:load initialVideos={ytVideos} />
+              </div>
             </article>
+          )}
+        </div>
 
-            <!-- Video Widget Section -->
-            <div style="margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 3rem;">
-              <VideoWidget client:load initialVideos={ytVideos} />
-            </div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <!-- Sidebar Slider -->
+          <SidebarSlider slides={sliderSlides} />
 
-            {latestNews.length > 0 && (
-              <section class="latest-news-section">
-                <h2 class="section-title">Son Haberler</h2>
-                <div class="latest-grid">
-                  {latestNews.map((item) => {
-                    const itemImg = item.featuredImage ? resolveMediaUrl(item.featuredImage.url) : null;
-                    const itemDesc = item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 100);
-                    return (
-                      <a href={`/haberler/${item.slug}`} class="latest-card">
-                        {itemImg && <img src={itemImg} alt={item.title} />}
-                        <h3>{item.title}</h3>
-                        <p>{itemDesc}</p>
-                      </a>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-          </>
-        )}
+          <!-- Sponsor Banner -->
+          <a href="https://6c4d.adj.st/?adj_t=1n5vmtep&adj_fallback=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi" target="_blank" rel="noopener noreferrer" class="sidebar-banner">
+            <img src={resolveMediaUrl('/api/media/file/gedik.jpg')} alt="Sponsor" />
+          </a>
+
+          <!-- Google News Takip -->
+          <div class="sidebar-section">
+            <h2 class="sidebar-title">Bizi Takip Edin</h2>
+            <a href="https://news.google.com/publications/CAAqBwgKMK-8uAsw9v64Aw?hl=tr&gl=TR&ceid=TR%3Atr" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:1rem; border:1px solid var(--border); border-radius:12px; text-decoration:none; color:inherit; font-weight:700;">
+               Google News'te Takip Et ➔
+            </a>
+          </div>
+
+          <!-- Blog Yazıları -->
+          <div class="sidebar-section">
+            <h2 class="sidebar-title">Son Blog Yazıları</h2>
+            {blogs.map(post => {
+              const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
+              return (
+                <a href={`/blog/${post.slug}`} class="sidebar-post">
+                  {authorImg ? (
+                    <img src={authorImg} alt={post.author?.name} class="sidebar-post-img" />
+                  ) : (
+                    <div class="sidebar-post-img" style="background:var(--border); display:flex; align-items:center; justify-content:center;">✍️</div>
+                  )}
+                  <div class="sidebar-post-content">
+                    <p class="sidebar-post-author">{post.author?.name}</p>
+                    <p class="sidebar-post-title">{post.title}</p>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </aside>
       </div>
     </main>
     <Footer />

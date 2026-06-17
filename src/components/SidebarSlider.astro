@@ -1,0 +1,209 @@
+---
+import { resolveMediaUrl } from '../lib/payload';
+import type { NewsItem } from '../lib/payload';
+
+interface Props {
+  slides: NewsItem[];
+}
+
+const { slides } = Astro.props;
+---
+
+{slides && slides.length > 0 && (
+  <div class="sidebar-slider" id="sidebar-slider">
+    <div class="embla__viewport">
+      <div class="embla__container">
+        {slides.map((item, index) => {
+          const imgUrl = item.featuredImage ? resolveMediaUrl(item.featuredImage.url) : null;
+          return (
+            <div class="embla__slide">
+              <a href={`/haberler/${item.slug}`} class="slide-link">
+                <div class="image-wrapper">
+                  {imgUrl ? (
+                    <img src={imgUrl} alt={item.featuredImage?.alt ?? item.title} loading="lazy" />
+                  ) : (
+                    <div class="no-img">📰</div>
+                  )}
+                  <div class="slide-overlay"></div>
+                </div>
+                <div class="slide-content">
+                  <h3 class="slide-title">{item.title}</h3>
+                </div>
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+    <!-- Dots navigation (Mobile-style) -->
+    <div class="embla__dots"></div>
+  </div>
+)}
+
+<style>
+  .sidebar-slider {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.2;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 1.5rem;
+  }
+
+  .embla__viewport {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  .embla__container {
+    display: flex;
+    height: 100%;
+  }
+
+  .embla__slide {
+    flex: 0 0 100%;
+    min-width: 0;
+    position: relative;
+    height: 100%;
+  }
+
+  .slide-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+  }
+
+  .slide-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2.5rem 1rem 1.5rem;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .slide-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .embla__dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    position: absolute;
+    bottom: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+
+  :global(.sidebar-slider .embla__dot) {
+    flex: 1;
+    max-width: 30px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.35);
+    border: none;
+    border-radius: 2px;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  :global(.sidebar-slider .embla__dot.is-active) {
+    background: var(--primary);
+  }
+
+  .no-img {
+    width: 100%;
+    height: 100%;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+</style>
+
+<script>
+  import EmblaCarousel from 'embla-carousel';
+
+  function initSidebarSlider() {
+    const slider = document.getElementById('sidebar-slider');
+    if (!slider) return;
+
+    const viewportNode = slider.querySelector('.embla__viewport') as HTMLElement;
+    const dotContainer = slider.querySelector('.embla__dots') as HTMLElement;
+
+    if (!viewportNode) return;
+
+    const emblaApi = EmblaCarousel(viewportNode, {
+      loop: true,
+      duration: 30,
+    });
+
+    // Dots
+    const dotNodes: HTMLElement[] = [];
+    if (dotContainer) {
+      dotContainer.innerHTML = '';
+      const slideCount = emblaApi.slideNodes().length;
+      for (let i = 0; i < slideCount; i++) {
+        const dot = document.createElement('button');
+        dot.className = `embla__dot ${i === 0 ? 'is-active' : ''}`;
+        dot.addEventListener('click', () => emblaApi.scrollTo(i));
+        dotContainer.appendChild(dot);
+        dotNodes.push(dot);
+      }
+    }
+
+    emblaApi.on('select', () => {
+      const activeIndex = emblaApi.selectedScrollSnap();
+      dotNodes.forEach((dot, idx) => {
+        if (idx === activeIndex) dot.classList.add('is-active');
+        else dot.classList.remove('is-active');
+      });
+    });
+
+    // Autoplay
+    setInterval(() => {
+      if (emblaApi.canScrollNext()) emblaApi.scrollNext();
+      else emblaApi.scrollTo(0);
+    }, 5000);
+  }
+
+  document.addEventListener('DOMContentLoaded', initSidebarSlider);
+  document.addEventListener('astro:page-load', initSidebarSlider);
+</script>
