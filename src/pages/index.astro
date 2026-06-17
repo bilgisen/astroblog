@@ -41,10 +41,15 @@ try {
   // Fetch slide-tagged news items for exact slot positioning
   let taggedNewsDocs: NewsItem[] = [];
   try {
-    const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`).join(',');
-    // Payload explicit array syntax for not_in to ensure exclusion
-    const taggedRes = await fetchFromPayload(`/api/news?where[tags.slug][in]=${slideSlugs}&where[category][not_in][]=26&where[category][not_in][]=28&limit=30`) as NewsListResponse;
+    const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
+    let endpoint = `/api/news?limit=30&where[category][not_in][]=26&where[category][not_in][]=28`;
+    slideSlugs.forEach(slug => {
+      endpoint += `&where[tags.slug][in][]=${slug}`;
+    });
+
+    const taggedRes = await fetchFromPayload(endpoint) as NewsListResponse;
     taggedNewsDocs = taggedRes.docs;
+    // console.log(`Fetched ${taggedNewsDocs.length} tagged news items`);
   } catch (err) {
     console.error("Error fetching tagged slider items:", err);
   }
