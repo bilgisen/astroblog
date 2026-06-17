@@ -1,4 +1,4 @@
----
+﻿---
 import { resolveMediaUrl } from '../lib/payload';
 import type { NewsItem } from '../lib/payload';
 
@@ -35,6 +35,15 @@ const { slides } = Astro.props;
         })}
       </div>
     </div>
+
+    <!-- Navigation Buttons -->
+    <button class="embla__button embla__button--prev" aria-label="Previous">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="embla__button embla__button--next" aria-label="Next">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+
     <!-- Dots navigation (Mobile-style) -->
     <div class="embla__dots"></div>
   </div>
@@ -147,6 +156,43 @@ const { slides } = Astro.props;
     background: var(--primary);
   }
 
+  .embla__button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s ease;
+    padding: 0;
+  }
+
+  .sidebar-slider:hover .embla__button {
+    opacity: 1;
+  }
+
+  .embla__button:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .embla__button--prev { left: 8px; }
+  .embla__button--next { right: 8px; }
+
+  @media (max-width: 768px) {
+    .embla__button { display: none; }
+  }
+
   .no-img {
     width: 100%;
     height: 100%;
@@ -167,6 +213,8 @@ const { slides } = Astro.props;
 
     const viewportNode = slider.querySelector('.embla__viewport') as HTMLElement;
     const dotContainer = slider.querySelector('.embla__dots') as HTMLElement;
+    const prevBtn = slider.querySelector('.embla__button--prev') as HTMLButtonElement;
+    const nextBtn = slider.querySelector('.embla__button--next') as HTMLButtonElement;
 
     if (!viewportNode) return;
 
@@ -174,6 +222,10 @@ const { slides } = Astro.props;
       loop: true,
       duration: 30,
     });
+
+    // Navigation
+    if (prevBtn) prevBtn.addEventListener('click', () => emblaApi.scrollPrev());
+    if (nextBtn) nextBtn.addEventListener('click', () => emblaApi.scrollNext());
 
     // Dots
     const dotNodes: HTMLElement[] = [];
@@ -198,10 +250,13 @@ const { slides } = Astro.props;
     });
 
     // Autoplay
-    setInterval(() => {
+    let autoplay = setInterval(() => {
       if (emblaApi.canScrollNext()) emblaApi.scrollNext();
       else emblaApi.scrollTo(0);
     }, 5000);
+
+    // Stop autoplay on interaction
+    emblaApi.on('pointerDown', () => clearInterval(autoplay));
   }
 
   document.addEventListener('DOMContentLoaded', initSidebarSlider);

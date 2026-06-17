@@ -1,4 +1,4 @@
----
+﻿---
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
@@ -173,14 +173,6 @@ function formatDate(dateStr: string | null): string {
         margin-bottom: 1.5rem;
       }
 
-      .sidebar-banner {
-        display: block;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-      }
-      .sidebar-banner img { width: 100%; height: auto; }
-
       .sidebar-post {
         display: flex;
         gap: 1rem;
@@ -248,19 +240,6 @@ function formatDate(dateStr: string | null): string {
         <aside class="sidebar">
           <!-- Sidebar Slider -->
           <SidebarSlider slides={sliderSlides} />
-
-          <!-- Sponsor Banner -->
-          <a href="https://6c4d.adj.st/?adj_t=1n5vmtep&adj_fallback=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi" target="_blank" rel="noopener noreferrer" class="sidebar-banner">
-            <img src={resolveMediaUrl('/api/media/file/gedik.jpg')} alt="Sponsor" />
-          </a>
-
-          <!-- Google News Takip -->
-          <div class="sidebar-section">
-            <h2 class="sidebar-title">Bizi Takip Edin</h2>
-            <a href="https://news.google.com/publications/CAAqBwgKMK-8uAsw9v64Aw?hl=tr&gl=TR&ceid=TR%3Atr" target="_blank" rel="noopener noreferrer" style="display:block; text-align:center; padding:1rem; border:1px solid var(--border); border-radius:12px; text-decoration:none; color:inherit; font-weight:700;">
-               Google News'te Takip Et ➔
-            </a>
-          </div>
 
           <!-- Blog Yazıları -->
           <div class="sidebar-section">
