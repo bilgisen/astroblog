@@ -1,9 +1,9 @@
----
+﻿---
 // Import the global.css file here so that it is included on
-// all pages through the use of the <BaseHead /> component.
+// all pages through the use of the <BaseHead /> component. 
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
-import FallbackImage from '../assets/og-fallback.png';
+import FallbackImage from '../assets/og-fallback.png';      
 import { SITE_TITLE } from '../consts';
 
 interface Props {
@@ -69,6 +69,16 @@ const ogImageUrl = resolveImageUrl(image);
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={ogImageUrl} />
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3MHE1FQ4CY"></script>
+<script is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3MHE1FQ4CY');
+</script>
 
 <!-- PWA Catch Event Early -->
 <script is:inline>
