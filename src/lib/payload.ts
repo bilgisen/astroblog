@@ -122,6 +122,16 @@ export async function fetchNewsList(
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
 }
 
+/** Fetch news articles by category ID */
+export async function fetchNewsByCategory(
+  categoryId: number,
+  page = 1,
+  limit = 20
+): Promise<NewsListResponse> {
+  const endpoint = `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&where[category][equals]=${categoryId}&sort=-publishedAt`;
+  return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
+}
+
 /** Fetch a single news article by ID */
 export async function fetchNewsById(id: number): Promise<NewsItem> {
   return fetchFromPayload(

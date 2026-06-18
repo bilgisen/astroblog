@@ -1,0 +1,254 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { fetchNewsByCategory, resolveMediaUrl, lexicalToPlainText } from '../lib/payload';
+import type { NewsItem } from '../lib/payload';
+
+let news: NewsItem[] = [];
+let error: string | null = null;
+
+try {
+  const data = await fetchNewsByCategory(28, 1, 100);
+  news = data.docs;
+} catch (e) {
+  error = e instanceof Error ? e.message : 'İçerikler yüklenemedi.';
+}
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <BaseHead title="Özel Haberler" description="Sponsorlu ve özel tanıtım içerikleri" />
+    <style>
+      .page-title {
+        border-bottom: 4px solid var(--primary);
+        padding-bottom: 0.75rem;
+        margin-bottom: 3rem;
+        display: inline-block;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+      }
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      .news-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--card);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      .news-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary);
+      }
+      .news-card img {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        display: block;
+      }
+      .news-card-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .news-card-category {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+      }
+      .news-card h2 {
+        font-size: 1.25rem;
+        margin: 0 0 0.75rem;
+        line-height: 1.4;
+        color: var(--foreground);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        flex: 1;
+      }
+      .news-card h2 a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .news-card-description {
+        font-size: 0.95rem;
+        color: var(--muted-foreground);
+        margin: 0 0 1.25rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .news-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--muted-foreground);
+        margin-top: auto;
+      }
+      .news-card-footer span { 
+        font-weight: 700;
+        color: var(--foreground);
+      }
+      .load-more-btn {
+        display: block;
+        width: fit-content;
+        margin: 4rem auto;
+        padding: 1rem 2.5rem;
+        background: var(--primary);
+        color: white;
+        border-radius: 99px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .load-more-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+      .load-more-btn.hidden {
+        display: none;
+      }
+
+      .error-message {
+        color: var(--destructive); 
+        padding: 1rem;
+        border: 1px solid var(--destructive); 
+        border-radius: 8px; 
+        background: var(--muted);
+      }
+      @media (max-width: 768px) {
+        .news-grid {
+          grid-template-columns: 1fr;
+          gap: 3rem;
+        }
+        .news-card {
+          border: none !important;
+          background: transparent !important;
+          padding: 0 0 3rem 0 !important;
+          border-bottom: 1px solid var(--border) !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+        .news-card:last-child {
+          border-bottom: none !important;
+        }
+        .news-card img {
+          display: block !important;
+          border-radius: 12px;
+          margin-bottom: 1.25rem;
+        }
+        .news-card-body {
+          padding: 0 !important;
+        }
+        .news-card h2 {
+          font-size: 1.5rem !important;
+          line-height: 1.2;
+          margin-bottom: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <h1 class="page-title">Özel Haberler</h1>
+
+      {error && <p class="error-message">⚠️ {error}</p>}
+
+      {news.length === 0 && !error && <p>Henüz özel haber bulunmuyor.</p>}
+
+      <div class="news-grid" id="news-grid">
+        {news.map((item, index) => {
+          const description =
+            item.seo?.metaDescription ?? lexicalToPlainText(item.body).slice(0, 160);
+          const imageUrl = item.featuredImage
+            ? resolveMediaUrl(item.featuredImage.url)
+            : null;
+
+          return (
+            <article class="news-card" style={index >= 30 ? "display: none" : ""}>
+              {imageUrl && (
+                <a href={`/haberler/${item.slug}`}>
+                  <img
+                    src={imageUrl}
+                    alt={item.featuredImage?.alt ?? item.title}
+                    width={600}
+                    height={338}
+                  />
+                </a>
+              )}
+              <div class="news-card-body">
+                {item.category && (
+                  <p class="news-card-category">{item.category.name}</p>
+                )}
+                <h2>
+                  <a href={`/haberler/${item.slug}`}>{item.title}</a>
+                </h2>
+                {description && (
+                  <p class="news-card-description">{description}</p>
+                )}
+                <div class="news-card-footer">
+                  <span>{item.author?.name}</span>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {news.length > 30 && (
+        <button id="load-more-btn" class="load-more-btn">
+          Daha Fazla Göster
+        </button>
+      )}
+    </main>
+    <Footer />
+
+    <script>
+      const btn = document.getElementById('load-more-btn');
+      const grid = document.getElementById('news-grid');
+      const cards = grid?.querySelectorAll('.news-card');
+      let currentlyShown = 30;
+      const batchSize = 30;
+
+      btn?.addEventListener('click', () => {
+        if (!cards) return;
+        
+        const nextBatch = Math.min(currentlyShown + batchSize, cards.length);
+        
+        for (let i = currentlyShown; i < nextBatch; i++) {
+          (cards[i] as HTMLElement).style.display = 'flex';
+        }
+        
+        currentlyShown = nextBatch;
+        
+        if (currentlyShown >= cards.length) {
+          btn.classList.add('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>
