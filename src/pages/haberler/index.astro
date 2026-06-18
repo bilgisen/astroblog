@@ -9,9 +9,8 @@ let news: NewsItem[] = [];
 let error: string | null = null;
 
 try {
-  const data = await fetchNewsList(1, 100, [28]); // Fetch a larger batch for client-side load more, excluding reklam
-  // Robust client-side filtering as a fallback
-  news = data.docs.filter(item => item.category && item.category.id !== 28);
+  const data = await fetchNewsList(1, 100); // Fetch a larger batch including adverts
+  news = data.docs || [];
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
 }
@@ -202,7 +201,7 @@ try {
                 </a>
               )}
               <div class="news-card-body">
-                {item.category && (
+                {item.category && item.category.id !== 28 && (
                   <p class="news-card-category">{item.category.name}</p>
                 )}
                 <h2>

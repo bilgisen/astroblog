@@ -201,7 +201,7 @@ try {
                 </a>
               )}
               <div class="news-card-body">
-                {item.category && (
+                {item.category && item.category.id !== 28 && (
                   <p class="news-card-category">{item.category.name}</p>
                 )}
                 <h2>

@@ -269,7 +269,7 @@ if (news?.author?.slug === 'atilla-yesilada') {
           {news && (
             <article>
               <div class="article-header">
-                {news.category && <span class="category-tag">{news.category.name}</span>}
+                {news.category && news.category.id !== 28 && <span class="category-tag">{news.category.name}</span>}
                 <h1>{news.title}</h1>
                 {description && <div class="excerpt">{description}</div>}
                 <div class="meta-info">

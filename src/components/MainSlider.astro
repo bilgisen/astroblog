@@ -29,7 +29,7 @@ const { slides } = Astro.props;
                     <div class="slide-overlay"></div>
                   </div>
                   <div class="slide-content">
-                    {item.category && (
+                    {item.category && item.category.id !== 28 && (
                       <span class="slide-category">{item.category.name}</span>
                     )}
                     <h2 class="slide-title">{item.title}</h2>
