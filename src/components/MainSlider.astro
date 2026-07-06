@@ -53,9 +53,9 @@ const { slides } = Astro.props;
       <div class="embla__dots"></div>
     </div>
 
-    <!-- Thumbnail navigation for Web -->
+    <!-- Thumbnail navigation for Web (first 10 only) -->
     <div class="thumb-nav">
-      {slides.map((item, index) => {
+      {slides.slice(0, 10).map((item, index) => {
         return (
           <button class={`thumb-nav-item ${index === 0 ? 'is-active' : ''}`} data-index={index}>
             <div class="thumb-border"></div>

@@ -8,8 +8,8 @@ import VideoWidget from '../components/VideoWidget';
 import { fetchParaAnalizVideos } from '../lib/youtube';
 import type { VideoItem } from '../lib/youtube';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import { fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, fetchFromPayload } from '../lib/payload';
-import type { NewsItem, BlogItem, NewsListResponse } from '../lib/payload';
+import { fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText } from '../lib/payload';
+import type { NewsItem, BlogItem } from '../lib/payload';
 import { Button } from '@/components/ui/button';
 
 let news: NewsItem[] = [];
@@ -38,86 +38,21 @@ try {
   });
   blogs = Array.from(uniqueAuthors.values()).slice(0, 6);
 
-  // Fetch slide-tagged news items for exact slot positioning
-  let taggedNewsDocs: NewsItem[] = [];
-  try {
-    const slideSlugs = Array.from({ length: 10 }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
-    let endpoint = `/api/news?limit=30&where[category][not_in][]=28`;
-    slideSlugs.forEach(slug => {
-      endpoint += `&where[tags.slug][in][]=${slug}`;
-    });
-
-    const taggedRes = await fetchFromPayload(endpoint) as NewsListResponse;
-    taggedNewsDocs = taggedRes.docs;
-    // console.log(`Fetched ${taggedNewsDocs.length} tagged news items`);
-  } catch (err) {
-    console.error("Error fetching tagged slider items:", err);
-  }
-
-  // Combine and sort candidates for the slider (excluding category 28 - ads)
-  const sliderCandidatesMap = new Map<number, NewsItem>();
+  // Slider: take top 10 latest news by publish date (excluding category 28 - ads)
   const filterAds = (item: NewsItem) => item.category && item.category.id !== 28;
 
-  latestNewsDocs.filter(filterAds).forEach(item => sliderCandidatesMap.set(item.id, item));
-  taggedNewsDocs.filter(filterAds).forEach(item => sliderCandidatesMap.set(item.id, item));
-
-  const sortedSliderCandidates = Array.from(sliderCandidatesMap.values()).sort((a, b) => {
+  const sortedLatest = latestNewsDocs.filter(filterAds).sort((a, b) => {
     const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
     const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
     return dateB - dateA;
   });
 
-  // Pin tagged news items to specific slots
-  const slides: (NewsItem | null)[] = Array(10).fill(null);
   const placedIds = new Set<number>();
-
-  sortedSliderCandidates.forEach(item => {
-    if (item.tags && item.tags.length > 0) {
-      const slideTag = item.tags.find(t => /^slide-\d+$/.test(t.slug));
-      if (slideTag) {
-        const pos = parseInt(slideTag.slug.replace('slide-', ''), 10);
-        const index = pos - 1;
-        if (index >= 0 && index < 10) {
-          if (!slides[index]) {
-            slides[index] = item;
-            placedIds.add(item.id);
-          }
-        }
-      }
-    }
-  });
-
-  // Fill empty slots with untagged/unplaced latest news
-  for (let i = 0; i < 10; i++) {
-    if (!slides[i]) {
-      // Find next available item that DOES NOT have any slide-XX tag
-      const nextAvailable = sortedSliderCandidates.find(item => {
-        if (placedIds.has(item.id)) return false;
-        const hasSlideTag = item.tags?.some(t => /^slide-\d+$/.test(t.slug));
-        return !hasSlideTag;
-      });
-      if (nextAvailable) {
-        slides[i] = nextAvailable;
-        placedIds.add(nextAvailable.id);
-      }
-    }
-  }
-
-  sliderSlides = slides.filter((s): s is NewsItem => s !== null);
-
-  // Combine and sort ALL candidates (with and without ads) for the news feed below slider
-  const allCandidatesMap = new Map<number, NewsItem>();
-  latestNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
-  taggedNewsDocs.forEach(item => allCandidatesMap.set(item.id, item));
-
-  const sortedAllCandidates = Array.from(allCandidatesMap.values()).sort((a, b) => {
-    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateB - dateA;
-  });
+  sliderSlides = sortedLatest.slice(0, 15);
+  sliderSlides.forEach(item => placedIds.add(item.id));
 
   // Remaining news items populate the home page feed (without duplication)
-  news = sortedAllCandidates.filter(item => !placedIds.has(item.id));
+  news = sortedLatest.filter(item => !placedIds.has(item.id));
 
 } catch (e) {
   error = e instanceof Error ? e.message : 'İçerik yüklenemedi.';
