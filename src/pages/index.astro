@@ -58,60 +58,72 @@ try {
   const isSlide0 = (item: NewsItem) => item.tags?.some(t => t.slug === 'slide0') ?? false;
   const filterSlider = (item: NewsItem) => filterAds(item) && !isSlide0(item);
 
-  // Sort tagged items newest-first so newer tagged items displace older ones forward
-  const sortedTagged = taggedNewsDocs.filter(filterSlider).sort((a, b) => {
+  // Combine all candidates and sort by date (newest first)
+  const allCandidatesMap = new Map<number, NewsItem>();
+  latestNewsDocs.filter(filterSlider).forEach(item => allCandidatesMap.set(item.id, item));
+  taggedNewsDocs.filter(filterSlider).forEach(item => allCandidatesMap.set(item.id, item));
+
+  const allSorted = Array.from(allCandidatesMap.values()).sort((a, b) => {
     const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
     const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
     return dateB - dateA;
   });
 
-  // Cascading slot placement: if slot is occupied, push existing item to next slot
-  const slides: (NewsItem | null)[] = Array(TOTAL_SLOTS).fill(null);
+  // Determine editor-reserved slots: for each slide-XX tag, only the NEWEST item gets it
+  const reservedSlots = new Map<number, number>(); // itemId → slot position (1-indexed)
+  const tagBestItem = new Map<number, { id: number; date: number }>(); // tag number → best item
 
-  sortedTagged.forEach(item => {
+  allSorted.forEach(item => {
     const slideTag = item.tags?.find(t => /^slide-\d+$/.test(t.slug));
     if (!slideTag) return;
 
-    let pos = parseInt(slideTag.slug.replace('slide-', ''), 10);
-    if (pos < 1 || pos > TOTAL_SLOTS) return;
+    const tagNum = parseInt(slideTag.slug.replace('slide-', ''), 10);
+    if (tagNum < 1 || tagNum > TOTAL_SLOTS) return;
 
-    // Cascade forward until we find an empty slot
-    let index = pos - 1;
-    while (index < TOTAL_SLOTS && slides[index] !== null) {
-      index++;
+    const itemDate = item.publishedAt ? new Date(item.publishedAt).getTime() : 0;
+    const existing = tagBestItem.get(tagNum);
+
+    // Items sorted newest-first, so first one wins
+    if (!existing) {
+      tagBestItem.set(tagNum, { id: item.id, date: itemDate });
+      reservedSlots.set(item.id, tagNum);
     }
-    if (index < TOTAL_SLOTS) {
-      slides[index] = item;
-    }
+    // Older items with same tag are NOT reserved — they flow by date
   });
 
-  // Collect placed IDs
+  // Build slides: date-based flow, skipping reserved slots
+  const slides: (NewsItem | null)[] = Array(TOTAL_SLOTS).fill(null);
   const placedIds = new Set<number>();
-  slides.forEach(item => {
-    if (item) placedIds.add(item.id);
+
+  // Place editor-reserved items in their slots
+  reservedSlots.forEach((slotPos, itemId) => {
+    const item = allSorted.find(i => i.id === itemId);
+    if (item) {
+      slides[slotPos - 1] = item;
+      placedIds.add(itemId);
+    }
   });
 
-  // Fill remaining empty slots with latest untagged news (newest first)
-  const sortedLatest = latestNewsDocs.filter(filterSlider).sort((a, b) => {
-    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateB - dateA;
-  });
-
+  // Fill remaining slots with date-based flow (newest first, skipping reserved slots)
+  let dateIndex = 0;
   for (let i = 0; i < TOTAL_SLOTS; i++) {
-    if (slides[i] === null) {
-      const next = sortedLatest.find(item => !placedIds.has(item.id));
-      if (next) {
-        slides[i] = next;
-        placedIds.add(next.id);
-      }
+    if (slides[i] !== null) continue; // reserved slot, skip
+
+    // Find next unplaced item from date-sorted list
+    while (dateIndex < allSorted.length && placedIds.has(allSorted[dateIndex].id)) {
+      dateIndex++;
+    }
+    if (dateIndex < allSorted.length) {
+      slides[i] = allSorted[dateIndex];
+      placedIds.add(allSorted[dateIndex].id);
+      dateIndex++;
     }
   }
 
   sliderSlides = slides.filter((s): s is NewsItem => s !== null);
 
   // Remaining news items populate the home page feed (without duplication)
-  news = sortedLatest.filter(item => !placedIds.has(item.id));
+  news = allSorted.filter(item => !placedIds.has(item.id));
 
 } catch (e) {
   error = e instanceof Error ? e.message : 'İçerik yüklenemedi.';
