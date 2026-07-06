@@ -273,7 +273,6 @@ if (news?.author?.slug === 'atilla-yesilada') {
                 <h1>{news.title}</h1>
                 {description && <div class="excerpt">{description}</div>}
                 <div class="meta-info">
-                  <span>{news.author?.name}</span>
                   {news.publishedAt && <span>{formatDate(news.publishedAt)}</span>}
                 </div>
                 <SocialShare title={news.title} url={shareUrl} />
