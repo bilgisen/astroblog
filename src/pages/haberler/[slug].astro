@@ -8,7 +8,7 @@ import VideoWidget from '../../components/VideoWidget';
 import SidebarSlider from '../../components/SidebarSlider.astro';
 import { fetchParaAnalizVideos } from '../../lib/youtube';
 import type { VideoItem } from '../../lib/youtube';
-import { fetchNewsBySlug, fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml, fetchFromPayload, getYouTubeEmbedId } from '../../lib/payload';
+import { fetchNewsBySlug, fetchNewsList, fetchBlogList, resolveMediaUrl, lexicalToPlainText, lexicalToHtml, fetchFromPayload } from '../../lib/payload';
 import type { NewsItem, BlogItem, NewsListResponse } from '../../lib/payload';
 
 const { slug } = Astro.params;
@@ -64,19 +64,6 @@ function formatDate(dateStr: string | null): string {
   });
 }
 
-// Extract Atilla Yesilada's video if applicable
-let atillaVideoId: string | null = null;
-if (news?.author?.slug === 'atilla-yesilada') {
-  const ytUrl = news.author.socialLinks?.youtube || "";
-  atillaVideoId = getYouTubeEmbedId(ytUrl);
-  
-  // Also try to find it in longBio if not in socialLinks
-  if (!atillaVideoId && news.author.longBio) {
-    const bioText = lexicalToPlainText(news.author.longBio);
-    const match = bioText.match(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-    if (match) atillaVideoId = match[1];
-  }
-}
 ---
 
 <!doctype html>
@@ -221,36 +208,6 @@ if (news?.author?.slug === 'atilla-yesilada') {
         overflow: hidden; 
       }
 
-      .atilla-section {
-        margin: 4rem 0;
-        padding: 2.5rem;
-        background: var(--muted);
-        border-radius: 20px;
-        border: 1px solid var(--border);
-      }
-      .atilla-title {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin-bottom: 1.5rem;
-        color: var(--foreground);
-        text-align: center;
-      }
-      .yt-embed {
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      }
-      .yt-embed iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
 
       @media (max-width: 960px) {
         .page-layout { grid-template-columns: 1fr; gap: 2rem; }
@@ -285,20 +242,6 @@ if (news?.author?.slug === 'atilla-yesilada') {
               )}
 
               <div class="content" set:html={bodyHtml} />
-
-              {atillaVideoId && (
-                <div class="atilla-section">
-                  <h2 class="atilla-title">Atilla Yeşilada'dan Günün Analizi</h2>
-                  <div class="yt-embed">
-                    <iframe
-                      src={"https://www.youtube.com/embed/" + atillaVideoId}
-                      title="Atilla Yeşilada Youtube"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                  </div>
-                </div>
-              )}
 
               <div style="margin: 4rem 0;">
                 <GoogleNewsBanner />
