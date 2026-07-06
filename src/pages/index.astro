@@ -58,11 +58,11 @@ try {
   const isSlide0 = (item: NewsItem) => item.tags?.some(t => t.slug === 'slide0') ?? false;
   const filterSlider = (item: NewsItem) => filterAds(item) && !isSlide0(item);
 
-  // Sort tagged items oldest-first so newer tagged items displace older ones
+  // Sort tagged items newest-first so newer tagged items displace older ones forward
   const sortedTagged = taggedNewsDocs.filter(filterSlider).sort((a, b) => {
     const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
     const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateA - dateB;
+    return dateB - dateA;
   });
 
   // Cascading slot placement: if slot is occupied, push existing item to next slot
