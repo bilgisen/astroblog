@@ -36,7 +36,7 @@ try {
       uniqueAuthors.set(post.author.id, post);
     }
   });
-  blogs = Array.from(uniqueAuthors.values()).slice(0, 6);
+  blogs = Array.from(uniqueAuthors.values()).slice(0, 10);
 
   // Fetch slide-tagged news items for slot positioning
   const TOTAL_SLOTS = 15;
@@ -361,18 +361,12 @@ function formatDate(dateStr: string | null): string {
       .sidebar {
         position: sticky;
         top: 6rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
       .sidebar-banner {
         display: block;
-        margin: -1.5rem -1.5rem 1.5rem;
-        border-radius: 16px 16px 0 0;
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
         overflow: hidden;
-        border-bottom: 1px solid var(--border);
       }
       .sidebar-banner img {
         width: 100%;
@@ -397,16 +391,14 @@ function formatDate(dateStr: string | null): string {
       .sidebar-post {
         display: flex;
         gap: 1rem;
-        padding: 0.75rem;
-        margin: 0 -0.75rem 0.25rem;
+        padding: 0.75rem 0;
         text-decoration: none;
         color: inherit;
         align-items: center;
-        border-radius: 12px;
-        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border);
       }
-      .sidebar-post:hover {
-        background: var(--muted);
+      .sidebar-post:last-of-type {
+        border-bottom: none;
       }
       .sidebar-post:hover .sidebar-post-title { color: var(--primary); }
       .sidebar-post-thumb-wrapper {
@@ -443,7 +435,7 @@ function formatDate(dateStr: string | null): string {
         flex: 1;
       }
       .sidebar-post-author {
-        font-size: 0.7rem;
+        font-size: 0.85rem;
         font-weight: 700;
         color: var(--primary);
         opacity: 0.9;
@@ -452,15 +444,15 @@ function formatDate(dateStr: string | null): string {
         margin: 0 0 0.25rem;
       }
       .sidebar-post-title {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         font-weight: 700;
-        line-height: 1.35;
+        line-height: 1.4;
         color: var(--foreground);
         opacity: 0.85;
         transition: color 0.2s, opacity 0.2s;
         margin: 0 0 0.3rem;
         display: -webkit-box;
-        -webkit-line-clamp: 4;
+        -webkit-line-clamp: 5;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
@@ -468,7 +460,7 @@ function formatDate(dateStr: string | null): string {
         opacity: 1;
       }
       .sidebar-post-date {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: var(--muted-foreground);
         font-weight: 500;
       }
@@ -499,7 +491,12 @@ function formatDate(dateStr: string | null): string {
           order: -1;
           margin-bottom: 2rem;
           position: static; 
-          padding-top: 2rem; 
+        }
+        .sidebar-post-author {
+          font-size: 1rem;
+        }
+        .sidebar-post-title {
+          font-size: 1.2rem;
         }
       }
     </style>
@@ -508,14 +505,34 @@ function formatDate(dateStr: string | null): string {
     <Header />
     <main>
       <!-- Sponsor Banner -->
-      <a href="https://6c4d.adj.st/?adj_t=1n5vmtep&adj_fallback=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi&adj_redirect_macos=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi" target="_blank" rel="noopener noreferrer" class="sponsor-banner">
-        <img
-          src={resolveMediaUrl('/api/media/file/gedik.jpg')}
-          alt="Gedik Yatırım"
-          width="970"
-          height="90"
-        />
-      </a>
+      <div id="sponsor-banner-container">
+        <a id="banner-default" href="https://6c4d.adj.st/?adj_t=1n5vmtep&adj_fallback=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi&adj_redirect_macos=https%3A%2F%2Fsozlesme.gedik.com%3Futm_source%3Dparaanaliz%26utm_medium%3Dbanner%26utm_campaign%3Dvirman-kampanyasi" target="_blank" rel="noopener noreferrer" class="sponsor-banner">
+          <img src={resolveMediaUrl('/api/media/file/gedik.jpg')} alt="Gedik Yatırım" width="970" height="90" />
+        </a>
+        <a id="banner-campaign" href="https://metgunenerji.com.tr/arz/?utm_source=para_analiz&utm_campaign=halka_arz&utm_medium=masthead" target="_blank" rel="noopener noreferrer" class="sponsor-banner" style="display:none">
+          <picture>
+            <source media="(max-width: 767px)" srcset={resolveMediaUrl('https://admin.paraanaliz.com/api/media/file/320x100.jpg')} />
+            <img src={resolveMediaUrl('/api/media/file/970x250.jpg')} alt="MetGün Enerji" width="970" height="250" />
+          </picture>
+        </a>
+      </div>
+      <script>
+        (function() {
+          var start = new Date('2026-07-19T20:55:00Z');
+          var end = new Date('2026-07-20T20:55:00Z');
+          var now = new Date();
+          if (now >= start && now < end) {
+            var def = document.getElementById('banner-default');
+            var cmp = document.getElementById('banner-campaign');
+            if (def) def.style.display = 'none';
+            if (cmp) {
+              cmp.style.display = 'block';
+              var img = new Image();
+              img.src = 'https://run.admost.com/adx/get.ashx?pbk=543209-386454-67334&preredir=%7bamClickThru%7d';
+            }
+          }
+        })();
+      </script>
 
       <!-- Main Slider (Premium Embla Carousel) -->
       <MainSlider slides={sliderSlides} />
