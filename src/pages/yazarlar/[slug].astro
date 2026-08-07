@@ -56,7 +56,7 @@ function formatDate(dateStr: string | null): string {
 <!doctype html>
 <html lang="tr">
   <head>
-    <BaseHead title={post?.seo?.metaTitle ?? post?.title ?? 'Blog'} description={description} image={ogImage} />
+    <BaseHead title={post?.seo?.metaTitle ?? post?.title ?? 'Köşe Yazısı'} description={description} image={ogImage} />
     <style>
       .page-layout {
         max-width: 1200px;
@@ -356,7 +356,7 @@ function formatDate(dateStr: string | null): string {
 
             <div class="article-body" set:html={bodyHtml} />
 
-            <SocialShare title={post.title} url={`https://paraanaliz.com/blog/${slug}`} />
+            <SocialShare title={post.title} url={`https://paraanaliz.com/yazarlar/${slug}`} />
           </>
         )}
       </article>
@@ -367,7 +367,7 @@ function formatDate(dateStr: string | null): string {
         {related.map((p) => {
           const thumb = p.featuredImage ? resolveMediaUrl(p.featuredImage.url) : null;
           return (
-            <a href={`/blog/${p.slug}`} class="sidebar-post">
+            <a href={`/yazarlar/${p.slug}`} class="sidebar-post">
               {thumb
                 ? <img src={thumb} alt={p.featuredImage?.alt ?? p.title} width={72} height={54} />
                 : <div class="sidebar-post-thumb-placeholder">📝</div>

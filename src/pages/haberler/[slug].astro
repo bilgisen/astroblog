@@ -266,7 +266,7 @@ function formatDate(dateStr: string | null): string {
             {blogs.map(post => {
               const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
               return (
-                <a href={"/blog/" + post.slug} class="sidebar-post">
+                <a href={"/yazarlar/" + post.slug} class="sidebar-post">
                   {authorImg ? (
                     <img src={authorImg} alt={post.author?.name} class="sidebar-post-img" />
                   ) : (

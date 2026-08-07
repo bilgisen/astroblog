@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://paraanaliz.com/blog</loc>
+    <loc>https://paraanaliz.com/yazarlar</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

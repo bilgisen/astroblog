@@ -9,8 +9,17 @@ let news: NewsItem[] = [];
 let error: string | null = null;
 
 try {
-  const data = await fetchNewsList(1, 100); // Fetch a larger batch including adverts
-  news = data.docs || [];
+  const pageSize = 100;
+  let page = 1;
+  let hasNext = true;
+  while (hasNext) {
+    const data = await fetchNewsList(page, pageSize);
+    news = news.concat(data.docs || []);
+    hasNext = data.hasNextPage && page < data.totalPages;
+    page++;
+    // Güvenlik sınırı — tüm haberler listelenir
+    if (page > 200) break;
+  }
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
 }

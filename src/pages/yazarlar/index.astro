@@ -27,7 +27,7 @@ function formatDate(dateStr: string | null): string {
 <!doctype html>
 <html lang="tr">
   <head>
-    <BaseHead title={`Blog — ${SITE_TITLE}`} description="Uzmanlardan ekonomi analizleri ve yorumlar." />
+    <BaseHead title={`Köşe Yazıları — ${SITE_TITLE}`} description="Uzmanlardan ekonomi analizleri ve yorumlar." />
     <style>
       .page-header {
         border-bottom: 4px solid var(--primary);
@@ -188,7 +188,7 @@ function formatDate(dateStr: string | null): string {
   <body>
     <Header />
     <main>
-      <h1 class="page-header">Blog</h1>
+      <h1 class="page-header">Köşe Yazıları</h1>
 
       {error && <p class="error-message">⚠️ {error}</p>}
       {posts.length === 0 && !error && <p>Henüz yazı bulunmuyor.</p>}
@@ -198,7 +198,7 @@ function formatDate(dateStr: string | null): string {
           const imgUrl = post.featuredImage ? resolveMediaUrl(post.featuredImage.url) : null;
           const desc = post.seo?.metaDescription ?? lexicalToPlainText(post.body).slice(0, 140);
           return (
-            <a href={`/blog/${post.slug}`} class="blog-card">
+            <a href={`/yazarlar/${post.slug}`} class="blog-card">
               {imgUrl
                 ? <img src={imgUrl} alt={post.featuredImage?.alt ?? post.title} width={600} height={338} />
                 : <div class="no-img">📝</div>

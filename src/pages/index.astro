@@ -593,7 +593,7 @@ function formatDate(dateStr: string | null): string {
           {blogs.map((post) => {
             const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
             return (
-              <a href={`/blog/${post.slug}`} class="sidebar-post">
+              <a href={`/yazarlar/${post.slug}`} class="sidebar-post">
                 <div class="sidebar-post-thumb-wrapper">
                   {authorImg
                     ? <img src={authorImg} alt={post.author?.name ?? 'Yazar'} width={56} height={56} />
@@ -613,7 +613,7 @@ function formatDate(dateStr: string | null): string {
             );
           })}
           {blogs.length === 0 && <p style="font-size:0.85rem;color:rgb(var(--gray));text-align:center;">Henüz yazı yok.</p>}
-          <a href="/blog" class="sidebar-more">Tüm Yazılar →</a>
+          <a href="/yazarlar" class="sidebar-more">Tüm Yazılar →</a>
         </aside>
       </div>
     </main>

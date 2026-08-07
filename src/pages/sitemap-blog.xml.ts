@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
     .map((post) => {
       const lastmod = post.updatedAt ? new Date(post.updatedAt).toISOString() : '';
       return `  <url>
-    <loc>https://paraanaliz.com/blog/${post.slug}</loc>
+    <loc>https://paraanaliz.com/yazarlar/${post.slug}</loc>
     ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
