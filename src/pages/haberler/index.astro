@@ -10,15 +10,14 @@ let error: string | null = null;
 
 try {
   const pageSize = 100;
+  const maxNews = 300;
   let page = 1;
-  let hasNext = true;
-  while (hasNext) {
+  while (news.length < maxNews) {
     const data = await fetchNewsList(page, pageSize);
-    news = news.concat(data.docs || []);
-    hasNext = data.hasNextPage && page < data.totalPages;
+    const batch = (data.docs || []).slice(0, maxNews - news.length);
+    news = news.concat(batch);
+    if (batch.length < pageSize || page >= data.totalPages) break;
     page++;
-    // Güvenlik sınırı — tüm haberler listelenir
-    if (page > 200) break;
   }
 } catch (e) {
   error = e instanceof Error ? e.message : 'Haberler yüklenemedi.';
