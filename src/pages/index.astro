@@ -23,7 +23,7 @@ try {
   // Fetch latest news, blog posts, and ParaAnaliz YouTube videos concurrently
   const [newsData, blogData, videos] = await Promise.all([
     fetchNewsList(1, 60),
-    fetchBlogList(1, 20),
+    fetchBlogList(1, 40),
     fetchParaAnalizVideos(),
   ]);
   
@@ -37,7 +37,7 @@ try {
       uniqueAuthors.set(post.author.id, post);
     }
   });
-  blogs = Array.from(uniqueAuthors.values()).slice(0, 10);
+  blogs = Array.from(uniqueAuthors.values()).slice(0, 18);
 
   // Fetch slide-tagged news items for slot positioning
   const TOTAL_SLOTS = 20;

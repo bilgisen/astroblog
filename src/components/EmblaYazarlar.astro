@@ -34,7 +34,7 @@ const { blogs } = Astro.props;
                   </div>
                   <div class="slide-content">
                     {post.author && (
-                      <span class="slide-author">{post.author.name}</span>
+                      <span class="slide-author">{post.author.name} yazıyor</span>
                     )}
                     <h3 class="slide-title">{post.title}</h3>
                   </div>
@@ -242,7 +242,7 @@ const { blogs } = Astro.props;
 
   .thumb-nav {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     gap: 0.5rem;
     margin-top: 0.9rem;
   }
@@ -280,7 +280,7 @@ const { blogs } = Astro.props;
   .thumb-photo-wrap {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
     border: 2px solid var(--border);
     transition: border-color 0.3s ease;
@@ -332,7 +332,7 @@ const { blogs } = Astro.props;
     if (!slider) return;
 
     const viewportNode = slider.querySelector('.embla__viewport') as HTMLElement;
-    const thumbNodes = document.querySelectorAll('.thumb-nav-item');
+    const thumbNodes = document.querySelectorAll('.yazarlar-slider-section .thumb-nav-item');
     const prevBtn = slider.querySelector('.embla__button--prev') as HTMLButtonElement;
     const nextBtn = slider.querySelector('.embla__button--next') as HTMLButtonElement;
 
