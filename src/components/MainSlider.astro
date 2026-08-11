@@ -280,16 +280,15 @@ const { slides } = Astro.props;
   }
 
   .thumb-num {
-    align-self: flex-start;
-    white-space: nowrap;
     font-family: "Inter Variable", var(--font-sans), sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     line-height: 1;
-    color: #ffffff;
-    background: var(--primary);
-    border-radius: 4px;
-    padding: 0.3rem 0.5rem;
+    color: var(--foreground);
+  }
+
+  .thumb-nav-item.is-active .thumb-num {
+    color: var(--primary);
   }
 
   /* Placeholder img style */

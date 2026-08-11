@@ -347,9 +347,13 @@ function formatDate(dateStr: string | null): string {
       /* ── Page layout: main + sidebar ── */
       .page-layout {
         display: grid;
-        grid-template-columns: 1fr 300px;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
         gap: 2.5rem;
         align-items: start;
+      }
+
+      .main-col {
+        min-width: 0;
       }
 
       /* Ana sayfa için main genişliğini artır */
@@ -483,7 +487,7 @@ function formatDate(dateStr: string | null): string {
         background: var(--border);
       }
 
-      @media (max-width: 960px) {
+      @media (max-width: 768px) {
         .page-layout { 
           grid-template-columns: 1fr; 
           display: flex;
@@ -541,7 +545,7 @@ function formatDate(dateStr: string | null): string {
 
       <div class="page-layout">
         <!-- Sol: Haberler -->
-        <div>
+        <div class="main-col">
           <EmblaYazarlar blogs={blogs} />
           <GoogleNewsBanner />
           <VideoWidget client:load initialVideos={ytVideos} />
