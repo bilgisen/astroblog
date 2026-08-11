@@ -53,9 +53,9 @@ const { slides } = Astro.props;
       <div class="embla__dots"></div>
     </div>
 
-    <!-- Number navigation for Web (all 20 slides) -->
+    <!-- Number navigation for Web (all 25 slides) -->
     <div class="thumb-nav">
-      {slides.slice(0, 20).map((_, index) => {
+      {slides.slice(0, 25).map((_, index) => {
         return (
           <button class={`thumb-nav-item ${index === 0 ? 'is-active' : ''}`} data-index={index}>
             <div class="thumb-border"></div>
@@ -241,7 +241,7 @@ const { slides } = Astro.props;
   /* Number nav (Desktop) */
   .thumb-nav {
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
+    grid-template-columns: repeat(25, 1fr);
     gap: 0.35rem;
     width: 100%;
   }
