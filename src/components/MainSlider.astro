@@ -241,8 +241,8 @@ const { slides } = Astro.props;
   /* Number nav (Desktop) */
   .thumb-nav {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 0.35rem;
     width: 100%;
   }
 
@@ -280,18 +280,16 @@ const { slides } = Astro.props;
   }
 
   .thumb-num {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--foreground);
-    opacity: 0.8;
-    font-family: var(--font-mono, monospace);
-    letter-spacing: -0.02em;
-    padding: 0 0.25rem;
-  }
-
-  .thumb-nav-item.is-active .thumb-num {
-    color: var(--primary);
-    opacity: 1;
+    align-self: flex-start;
+    white-space: nowrap;
+    font-family: "Inter Variable", var(--font-sans), sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #ffffff;
+    background: var(--primary);
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
   }
 
   /* Placeholder img style */

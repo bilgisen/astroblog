@@ -130,6 +130,13 @@ try {
 } catch (e) {
   error = e instanceof Error ? e.message : 'İçerik yüklenemedi.';
 }
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('tr-TR', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
 ---
 
 <!doctype html>
@@ -372,6 +379,109 @@ try {
       .sidebar-banner:hover img {
         transform: scale(1.02);
       }
+      .sidebar-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--foreground);
+        opacity: 0.85;
+        margin: 0 0 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+      }
+      .sidebar-post {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        text-decoration: none;
+        color: inherit;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-post:last-of-type {
+        border-bottom: none;
+      }
+      .sidebar-post:hover .sidebar-post-title { color: var(--primary); }
+      .sidebar-post-thumb-wrapper {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid var(--border);
+      }
+      .sidebar-post img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      .sidebar-post:hover img {
+        transform: scale(1.05);
+      }
+      .sidebar-post-thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        background: var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+      }
+      .sidebar-post-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+      }
+      .sidebar-post-author {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.25rem;
+      }
+      .sidebar-post-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--foreground);
+        opacity: 0.85;
+        transition: color 0.2s, opacity 0.2s;
+        margin: 0 0 0.3rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .sidebar-post:hover .sidebar-post-title {
+        opacity: 1;
+      }
+      .sidebar-post-date {
+        font-size: 0.8rem;
+        color: var(--muted-foreground);
+        font-weight: 500;
+      }
+      .sidebar-more {
+        display: block;
+        text-align: center;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+        border-radius: 8px;
+        background: var(--muted);
+        transition: background 0.2s ease;
+      }
+      .sidebar-more:hover {
+        background: var(--border);
+      }
 
       @media (max-width: 960px) {
         .page-layout { 
@@ -383,6 +493,12 @@ try {
           order: -1;
           margin-bottom: 2rem;
           position: static; 
+        }
+        .sidebar-post-author {
+          font-size: 1rem;
+        }
+        .sidebar-post-title {
+          font-size: 1.2rem;
         }
       }
     </style>
@@ -426,8 +542,8 @@ try {
       <div class="page-layout">
         <!-- Sol: Haberler -->
         <div>
-          <GoogleNewsBanner />
           <EmblaYazarlar blogs={blogs} />
+          <GoogleNewsBanner />
           <VideoWidget client:load initialVideos={ytVideos} />
 
           {error && (
@@ -476,6 +592,31 @@ try {
           <a href="https://sanatif.com.tr/urun/12-para-terapi-kampi-dr-cuneyt-akman-atilla-yesilada-baris-soydan-durmus-yilmaz-ve-dr-emre-akanak-23-26-agustos-2026-hattusa-kazdaglari/" target="_blank" rel="noopener noreferrer" class="sidebar-banner">
             <img src="https://sanatif.com.tr/wp-content/uploads/2026/04/Ekonomik-terapi-kampi-1.png" alt="Para Terapi Kampı" width="300" height="375" />
           </a>
+          <h2 class="sidebar-title">Son Köşe Yazıları</h2>
+          {blogs.map((post) => {
+            const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
+            return (
+              <a href={`/yazarlar/${post.slug}`} class="sidebar-post">
+                <div class="sidebar-post-thumb-wrapper">
+                  {authorImg
+                    ? <img src={authorImg} alt={post.author?.name ?? 'Yazar'} width={56} height={56} />
+                    : <div class="sidebar-post-thumb-placeholder">✍️</div>
+                  }
+                </div>
+                <div class="sidebar-post-content">
+                  {post.author && (
+                    <p class="sidebar-post-author">{post.author.name}</p>
+                  )}
+                  <p class="sidebar-post-title">{post.title}</p>
+                  {post.publishedAt && (
+                    <p class="sidebar-post-date">{formatDate(post.publishedAt)}</p>
+                  )}
+                </div>
+              </a>
+            );
+          })}
+          {blogs.length === 0 && <p style="font-size:0.85rem;color:rgb(var(--gray));text-align:center;">Henüz yazı yok.</p>}
+          <a href="/yazarlar" class="sidebar-more">Tüm Yazılar →</a>
         </aside>
       </div>
     </main>
