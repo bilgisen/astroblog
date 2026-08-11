@@ -11,7 +11,6 @@ const { blogs } = Astro.props;
 
 {blogs && blogs.length > 0 && (
   <section class="yazarlar-slider-section">
-    <h2 class="yazarlar-title">Son Köşe Yazıları</h2>
     <div class="yazarlar-slider" id="embla-yazarlar">
       <div class="embla__viewport">
         <div class="embla__container">
@@ -78,18 +77,6 @@ const { blogs } = Astro.props;
 <style>
   .yazarlar-slider-section {
     margin-bottom: 2.5rem;
-  }
-
-  .yazarlar-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--foreground);
-    opacity: 0.85;
-    margin: 0 0 1.25rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
   }
 
   .yazarlar-slider {
