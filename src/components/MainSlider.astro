@@ -53,16 +53,13 @@ const { slides } = Astro.props;
       <div class="embla__dots"></div>
     </div>
 
-    <!-- Thumbnail navigation for Web (first 10 only) -->
+    <!-- Number navigation for Web (all 20 slides) -->
     <div class="thumb-nav">
-      {slides.slice(0, 10).map((item, index) => {
+      {slides.slice(0, 20).map((_, index) => {
         return (
           <button class={`thumb-nav-item ${index === 0 ? 'is-active' : ''}`} data-index={index}>
             <div class="thumb-border"></div>
-            <div class="thumb-content">
-              <span class="thumb-num">{String(index + 1).padStart(2, '0')}</span>
-              <span class="thumb-title">{item.title}</span>
-            </div>
+            <span class="thumb-num">{String(index + 1).padStart(2, '0')}</span>
           </button>
         );
       })}
@@ -241,7 +238,7 @@ const { slides } = Astro.props;
     display: none;
   }
 
-  /* Thumbnails (Desktop) */
+  /* Number nav (Desktop) */
   .thumb-nav {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -258,7 +255,7 @@ const { slides } = Astro.props;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.35rem;
     outline: none;
     opacity: 0.6;
     transition: opacity 0.3s ease;
@@ -282,31 +279,19 @@ const { slides } = Astro.props;
     background: var(--primary);
   }
 
-  .thumb-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0 0.25rem;
-  }
-
   .thumb-num {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: var(--foreground);
     opacity: 0.8;
     font-family: var(--font-mono, monospace);
     letter-spacing: -0.02em;
+    padding: 0 0.25rem;
   }
 
-  .thumb-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--foreground);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .thumb-nav-item.is-active .thumb-num {
+    color: var(--primary);
+    opacity: 1;
   }
 
   /* Placeholder img style */

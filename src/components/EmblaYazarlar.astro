@@ -1,0 +1,318 @@
+---
+import { resolveMediaUrl } from '../lib/payload';
+import type { BlogItem } from '../lib/payload';
+
+interface Props {
+  blogs: BlogItem[];
+}
+
+const { blogs } = Astro.props;
+---
+
+{blogs && blogs.length > 0 && (
+  <section class="yazarlar-slider-section">
+    <h2 class="yazarlar-title">Son Köşe Yazıları</h2>
+    <div class="yazarlar-slider" id="embla-yazarlar">
+      <div class="embla__viewport">
+        <div class="embla__container">
+          {blogs.map((post) => {
+            const itemImg = post.featuredImage
+              ? resolveMediaUrl(post.featuredImage.url)
+              : post.author?.profilePhoto
+                ? resolveMediaUrl(post.author.profilePhoto.url)
+                : null;
+            const authorImg = post.author?.profilePhoto ? resolveMediaUrl(post.author.profilePhoto.url) : null;
+            return (
+              <div class="embla__slide">
+                <a href={`/yazarlar/${post.slug}`} class="slide-link">
+                  <div class="image-wrapper">
+                    {itemImg ? (
+                      <img src={itemImg} alt={post.featuredImage?.alt ?? post.title} loading="lazy" />
+                    ) : (
+                      <div class="no-img">✍️</div>
+                    )}
+                  </div>
+                  <div class="slide-body">
+                    {post.author && (
+                      <div class="author-row">
+                        {authorImg ? (
+                          <img src={authorImg} alt={post.author.name} class="author-avatar" loading="lazy" />
+                        ) : (
+                          <span class="author-avatar author-avatar-placeholder">✍️</span>
+                        )}
+                        <span class="author-name">{post.author.name}</span>
+                      </div>
+                    )}
+                    <h3 class="slide-title">{post.title}</h3>
+                  </div>
+                </a>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <button class="embla__button embla__button--prev" aria-label="Önceki">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="embla__button embla__button--next" aria-label="Sonraki">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+
+      <!-- Dots navigation -->
+      <div class="embla__dots"></div>
+    </div>
+  </section>
+)}
+
+<style>
+  .yazarlar-slider-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .yazarlar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--foreground);
+    opacity: 0.85;
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .yazarlar-slider {
+    position: relative;
+    width: 100%;
+  }
+
+  .embla__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .embla__container {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .embla__slide {
+    flex: 0 0 calc((100% - 3rem) / 4);
+    min-width: 0;
+    position: relative;
+  }
+
+  .slide-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .slide-link:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  .image-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+  }
+
+  .image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+
+  .slide-link:hover .image-wrapper img {
+    transform: scale(1.04);
+  }
+
+  .no-img {
+    width: 100%;
+    height: 100%;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+
+  .slide-body {
+    padding: 0.75rem 0.85rem 0.9rem;
+  }
+
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .author-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+    border: 1px solid var(--border);
+  }
+
+  .author-avatar-placeholder {
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+  }
+
+  .author-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .slide-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--foreground);
+    margin: 0.35rem 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.3s ease;
+  }
+
+  .slide-link:hover .slide-title {
+    color: var(--primary);
+  }
+
+  .embla__button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s ease;
+    padding: 0;
+  }
+
+  .yazarlar-slider:hover .embla__button {
+    opacity: 1;
+  }
+
+  .embla__button:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .embla__button--prev { left: 10px; }
+  .embla__button--next { right: 10px; }
+
+  .embla__dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+
+  :global(#embla-yazarlar .embla__dot) {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+
+  :global(#embla-yazarlar .embla__dot.is-active) {
+    background: var(--primary);
+    transform: scale(1.3);
+  }
+
+  /* Desktop only */
+  @media (max-width: 768px) {
+    .yazarlar-slider-section {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import EmblaCarousel from 'embla-carousel';
+
+  function initYazarlarSlider() {
+    const slider = document.getElementById('embla-yazarlar');
+    if (!slider) return;
+
+    const viewportNode = slider.querySelector('.embla__viewport') as HTMLElement;
+    const dotContainer = slider.querySelector('.embla__dots') as HTMLElement;
+    const prevBtn = slider.querySelector('.embla__button--prev') as HTMLButtonElement;
+    const nextBtn = slider.querySelector('.embla__button--next') as HTMLButtonElement;
+
+    if (!viewportNode) return;
+
+    const emblaApi = EmblaCarousel(viewportNode, {
+      loop: false,
+      duration: 30,
+    });
+
+    if (prevBtn) prevBtn.addEventListener('click', () => emblaApi.scrollPrev());
+    if (nextBtn) nextBtn.addEventListener('click', () => emblaApi.scrollNext());
+
+    // Dots (one per scroll snap for multi-slide-per-view)
+    const dotNodes: HTMLElement[] = [];
+    if (dotContainer) {
+      dotContainer.innerHTML = '';
+      const snapCount = emblaApi.scrollSnapList().length;
+      for (let i = 0; i < snapCount; i++) {
+        const dot = document.createElement('button');
+        dot.className = `embla__dot ${i === 0 ? 'is-active' : ''}`;
+        dot.addEventListener('click', () => emblaApi.scrollTo(i));
+        dotContainer.appendChild(dot);
+        dotNodes.push(dot);
+      }
+    }
+
+    emblaApi.on('select', () => {
+      const activeIndex = emblaApi.selectedScrollSnap();
+      dotNodes.forEach((dot, idx) => {
+        if (idx === activeIndex) dot.classList.add('is-active');
+        else dot.classList.remove('is-active');
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initYazarlarSlider);
+  document.addEventListener('astro:page-load', initYazarlarSlider);
+</script>
