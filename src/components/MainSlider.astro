@@ -388,12 +388,14 @@ const { slides } = Astro.props;
     if (!mainSlider) return;
 
     const viewportNode = mainSlider.querySelector('.embla__viewport') as HTMLElement;
-    const thumbNodes = document.querySelectorAll('.thumb-nav-item');
+    if (!viewportNode) return;
+    if (viewportNode.dataset.emblaInit === 'true') return;
+    viewportNode.dataset.emblaInit = 'true';
+
+    const thumbNodes = document.querySelectorAll('.main-slider-container .thumb-nav-item');
     const dotContainer = mainSlider.querySelector('.embla__dots') as HTMLElement;
     const prevBtn = mainSlider.querySelector('.embla__prev') as HTMLElement;
     const nextBtn = mainSlider.querySelector('.embla__next') as HTMLElement;
-
-    if (!viewportNode) return;
 
     const emblaApi = EmblaCarousel(viewportNode, {
       loop: true,

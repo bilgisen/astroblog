@@ -257,13 +257,6 @@ const { blogs } = Astro.props;
     flex-direction: column;
     gap: 0.45rem;
     outline: none;
-    opacity: 0.55;
-    transition: opacity 0.3s ease;
-  }
-
-  .thumb-nav-item:hover,
-  .thumb-nav-item.is-active {
-    opacity: 1;
   }
 
   .thumb-border {
@@ -332,11 +325,13 @@ const { blogs } = Astro.props;
     if (!slider) return;
 
     const viewportNode = slider.querySelector('.embla__viewport') as HTMLElement;
+    if (!viewportNode) return;
+    if (viewportNode.dataset.emblaInit === 'true') return;
+    viewportNode.dataset.emblaInit = 'true';
+
     const thumbNodes = document.querySelectorAll('.yazarlar-slider-section .thumb-nav-item');
     const prevBtn = slider.querySelector('.embla__button--prev') as HTMLButtonElement;
     const nextBtn = slider.querySelector('.embla__button--next') as HTMLButtonElement;
-
-    if (!viewportNode) return;
 
     const emblaApi = EmblaCarousel(viewportNode, {
       loop: true,
