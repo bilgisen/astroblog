@@ -72,11 +72,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ── Network-First with Cache Fallback for HTML Page Navigations ──
-  // This ensures users always get the freshest articles, falling back to offline mode if needed.
+  // This ensures users always get the freshest articles. On network failure,
+  // serve the cached version of the SAME URL — never a different page (the
+  // home page) so that a shared article link can't silently open the home page.
   if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return caches.match('/');
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return offlineFallback(event.request);
+        });
       })
     );
     return;
@@ -86,6 +91,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       return cachedResponse || fetch(event.request);
-    }).catch(() => caches.match('/'))
+    }).catch(() => offlineFallback(event.request))
   );
 });
+
+// Minimal offline page — shown only when the network fails AND there is no
+// cached copy of the exact requested URL. Never redirects to the home page.
+function offlineFallback(request) {
+  return new Response(
+    '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bağlantı kurulamadı</title></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:4rem 1rem;color:#222"><h1>Bağlantı kurulamadı</h1><p>Lütfen internet bağlantınızı kontrol edip tekrar deneyin.</p><p><a href="/">Ana sayfaya dön</a></p></body></html>',
+    { headers: { 'content-type': 'text/html; charset=utf-8' } }
+  );
+}

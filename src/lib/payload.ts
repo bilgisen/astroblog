@@ -16,6 +16,9 @@ const PUBLIC_API_URL =
 /** Payload API yanıtları için Cloudflare Cache API TTL (saniye). */
 export const PAYLOAD_CACHE_TTL = 120;
 
+// Cache key namespace — değiştirilirse tüm payload cache anında geçersiz olur.
+const PAYLOAD_CACHE_PREFIX = 'https://paraanaliz.com/.payload-cache/v2';
+
 /**
  * Liste sorgularında payload'u küçültmek için Payload `select` parametresi.
  * `body` (Lexical rich text) dışarıda bırakılır — liste sayfaları gerekmez.
@@ -57,11 +60,33 @@ async function cachePut(
         headers: {
           'content-type': contentType ?? 'application/json',
           'cache-control': `public, max-age=${ttl}`,
+          // Elle freshness kontrolü için — Cloudflare Cache API bazı durumlarda
+          // max-age geçse bile eski yanıtı döndürebilir.
+          'x-payload-cached-at': String(Date.now()),
         },
       })
     );
   } catch {
     // cache yazma hatası kritik değil
+  }
+}
+
+/** Cache'ten yanıtı taze olarak döner; stale ise siler ve null döner. */
+async function cacheGetFresh(cache: any, key: Request, ttl: number): Promise<Response | null> {
+  try {
+    const cached = await cache.match(key);
+    if (!cached) return null;
+    const cachedAt = Number(cached.headers.get('x-payload-cached-at') || 0);
+    if (cachedAt && Date.now() - cachedAt < ttl * 1000) return cached;
+    // stale → sil, taze istek yapılsın
+    try {
+      await cache.delete(key);
+    } catch {
+      // silme hatası kritik değil
+    }
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -103,15 +128,11 @@ async function fetchPayloadOnce(endpoint: string): Promise<Response> {
  */
 export async function fetchFromPayload(endpoint: string): Promise<unknown> {
   const cache = getCache();
-  const cacheKey = new Request(`https://paraanaliz.com/.payload-cache${endpoint}`);
+  const cacheKey = new Request(`${PAYLOAD_CACHE_PREFIX}${endpoint}`);
 
   if (cache) {
-    try {
-      const cached = await cache.match(cacheKey);
-      if (cached) return cached.json();
-    } catch {
-      // cache okuma hatası → taze istek
-    }
+    const fresh = await cacheGetFresh(cache, cacheKey, PAYLOAD_CACHE_TTL);
+    if (fresh) return fresh.json();
   }
 
   let res: Response | null = null;
