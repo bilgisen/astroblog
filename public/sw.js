@@ -10,11 +10,13 @@ const ASSETS_TO_CACHE = [
 // Install Event
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => {
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      // addAll bir asset başarısız olursa reddeder — ön bellekleme dene, hata kritik değil
+      .catch((err) => {
+        console.warn('PWA: initial cache failed (offline?), continuing:', err);
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -25,7 +27,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('PWA: Clearing Old Cache:', cache);
             return caches.delete(cache);
           }
         })
@@ -54,18 +55,18 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(event.request).then((cachedResponse) => {
-          const fetchPromise = fetch(event.request).then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch((err) => {
-            console.warn('PWA: Background fetch failed for:', event.request.url, err);
-          });
+          const fetchPromise = fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse.status === 200) {
+                cache.put(event.request, networkResponse.clone()).catch(() => {});
+              }
+              return networkResponse;
+            })
+            .catch(() => null); // ağ hatası — sessizce cache'e düş
 
           return cachedResponse || fetchPromise;
         });
-      })
+      }).catch(() => fetch(event.request))
     );
     return;
   }
@@ -85,6 +86,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       return cachedResponse || fetch(event.request);
-    })
+    }).catch(() => caches.match('/'))
   );
 });

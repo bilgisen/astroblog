@@ -10,7 +10,7 @@ let error: string | null = null;
 
 try {
   const pageSize = 100;
-  const maxNews = 300;
+  const maxNews = 100;
   let page = 1;
   while (news.length < maxNews) {
     const data = await fetchNewsList(page, pageSize);

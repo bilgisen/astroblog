@@ -20,14 +20,25 @@ let ytVideos: VideoItem[] = [];
 let error: string | null = null;
 
 try {
-  const [newsData, blogData, videos] = await Promise.all([
+  // Slider için 10 slayt (current news hariç) — ana fetch'lerle paralel çekilir
+  const fetchSlider = () =>
+    fetchFromPayload(`/api/news?limit=11&where[category][not_in][]=28&where[slug][not_equals]=${slug}`)
+      .then((r) => (r as NewsListResponse).docs)
+      .catch((err) => {
+        console.error("Sidebar slider fetch error:", err);
+        return [] as NewsItem[];
+      });
+
+  const [newsData, blogData, videos, sliderDocs] = await Promise.all([
     fetchNewsBySlug(slug!),
     fetchBlogList(1, 6),
     fetchParaAnalizVideos(),
+    fetchSlider(),
   ]);
 
   news = newsData;
   ytVideos = videos;
+  sliderSlides = sliderDocs.slice(0, 10);
 
   // Filter for unique authors for blog sidebar
   const uniqueAuthors = new Map<number, BlogItem>();
@@ -37,15 +48,6 @@ try {
     }
   });
   blogs = Array.from(uniqueAuthors.values()).slice(0, 6);
-
-  // Fetch slider news: 10 slides, exclude current news slug
-  try {
-    const endpoint = "/api/news?limit=11&where[category][not_in][]=28&where[slug][not_equals]=" + slug;
-    const taggedRes = await fetchFromPayload(endpoint) as NewsListResponse;
-    sliderSlides = taggedRes.docs.slice(0, 10);
-  } catch (err) {
-    console.error("Sidebar slider fetch error:", err);
-  }
 
   if (!news) error = 'Haber bulunamadı.';
 } catch (e) {

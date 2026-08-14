@@ -1,0 +1,195 @@
+---
+// JTicker.astro — alt bant marquee ticker (veribor.fastapicloud.dev)
+---
+
+<div class="jticker" id="jticker">
+  <a class="jticker-link" href="https://jetborsa.com" target="_blank" rel="noopener noreferrer" aria-label="JetBorsa">
+    <div class="jticker-content" id="jticker-content">
+      <div class="jticker-placeholder">Piyasalar Yükleniyor...</div>
+    </div>
+  </a>
+  <a class="jticker-logo" href="https://jetborsa.com" target="_blank" rel="noopener noreferrer" aria-label="JetBorsa">
+    <svg viewBox="0 0 1372 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1372 0H686v349.912h343v424.685c-19.06 97.171-114.333 291.513-343 291.513S351.167 832.9 326.667 716.294H0c81.667 716.296 490 683.386 718.667 683.386 375.663 0 604.333-265.03 653.333-654.29z" fill="#494fdf"/>
+      <path fill="#34c759" d="M334.576 366.57H667.11v348.19H334.576z"/>
+    </svg>
+  </a>
+</div>
+
+<style>
+  .jticker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--card);
+    border-top: 1px solid var(--border);
+    color: var(--foreground);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    z-index: 100;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .jticker-link {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .jticker-content {
+    display: flex;
+    white-space: nowrap;
+    width: max-content;
+    will-change: transform;
+    animation: jmarquee 45s linear infinite;
+  }
+
+  .jticker-content:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes jmarquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  :global(.jticker-item) {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: 0.5rem;
+    border-right: 1px solid var(--border);
+  }
+
+  :global(.jticker-label) {
+    color: var(--muted-foreground);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  :global(.jticker-price) {
+    color: var(--foreground);
+    font-weight: 700;
+  }
+
+  :global(.jticker-diff) {
+    font-weight: 700;
+  }
+
+  :global(.jticker-diff.positive) {
+    color: #10b981;
+  }
+
+  :global(.jticker-diff.negative) {
+    color: #ef4444;
+  }
+
+  .jticker-logo {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    z-index: 1;
+  }
+
+  .jticker-logo svg {
+    height: 24px;
+    width: auto;
+    display: block;
+  }
+
+  .jticker-logo:hover svg {
+    opacity: 0.8;
+  }
+
+  .jticker-placeholder {
+    padding: 0 2rem;
+    color: var(--muted-foreground);
+  }
+
+  :global(body) {
+    padding-bottom: 40px;
+  }
+</style>
+
+<script>
+  function formatPrice(p: number) {
+    return p > 1000
+      ? p.toLocaleString('tr-TR', { maximumFractionDigits: 2 })
+      : p.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  }
+
+  function formatDiff(percent: number) {
+    const sign = percent > 0 ? '+' : '';
+    return `${sign}${percent.toFixed(2)}%`;
+  }
+
+  async function fetchTickerData() {
+    try {
+      const res = await fetch('/api/jticker', { headers: { accept: 'application/json' } });
+      if (!res.ok) throw new Error(`Proxy error ${res.status}`);
+      const data = await res.json();
+      const summary = data.summary;
+      const gainers = data.gainers;
+
+      const items: { label: string; price: string; diff: string; cls: string; arrow: string }[] = [];
+
+      const pickIndex = (code: string) => (summary.data as any[]).find((i: any) => i.code === code);
+      ['XU030', 'XU100'].forEach((code) => {
+        const idx = pickIndex(code);
+        if (!idx) return;
+        items.push({
+          label: idx.label ?? idx.name,
+          price: formatPrice(idx.last_price),
+          diff: formatDiff(idx.diff_percent),
+          cls: idx.diff_percent >= 0 ? 'positive' : 'negative',
+          arrow: idx.diff_percent >= 0 ? '▲' : '▼',
+        });
+      });
+
+      (gainers.data as any[]).forEach((g) => {
+        items.push({
+          label: g.code,
+          price: formatPrice(g.last_price),
+          diff: formatDiff(g.diff_percent),
+          cls: g.diff_percent >= 0 ? 'positive' : 'negative',
+          arrow: g.diff_percent >= 0 ? '▲' : '▼',
+        });
+      });
+
+      const LOGO = '<span class="jticker-logo"><svg viewBox="0 0 1372 1400" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1372 0H686v349.912h343v424.685c-19.06 97.171-114.333 291.513-343 291.513S351.167 832.9 326.667 716.294H0c81.667 716.296 490 683.386 718.667 683.386 375.663 0 604.333-265.03 653.333-654.29z" fill="#494fdf"/><path fill="#34c759" d="M334.576 366.57H667.11v348.19H334.576z"/></svg></span>';
+
+      const html = items
+        .map((it) => `
+          <div class="jticker-item">
+            <span class="jticker-label">${it.label}</span>
+            <span class="jticker-price">${it.price}</span>
+            <span class="jticker-diff ${it.cls}">${it.arrow} ${it.diff}</span>
+          </div>
+        `)
+        .join('');
+
+      const container = document.getElementById('jticker-content');
+      if (container) {
+        container.innerHTML = html + html;
+      }
+    } catch (error) {
+      console.error('JTicker error:', error);
+    }
+  }
+
+  fetchTickerData();
+  setInterval(fetchTickerData, 60000);
+</script>

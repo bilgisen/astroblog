@@ -20,16 +20,34 @@ let ytVideos: VideoItem[] = [];
 let error: string | null = null;
 
 try {
+  // Slide-etiketli haberler için sorgu endpoint'i (parallel çekilir)
+  const TOTAL_SLOTS = 25;
+  const TAGGED_SLOTS = 10; // only first 10 slots are editor-tag-bound; 11-20 flow by date
+  const slideSlugs = Array.from({ length: TAGGED_SLOTS }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
+  let tagEndpoint = `/api/news?limit=30&where[category][not_in][]=28`;
+  slideSlugs.forEach(slug => {
+    tagEndpoint += `&where[tags.slug][in][]=${slug}`;
+  });
+
+  const fetchTagged = () =>
+    fetchFromPayload(tagEndpoint)
+      .then((r) => (r as NewsListResponse).docs)
+      .catch((err) => {
+        console.error("Error fetching tagged slider items:", err);
+        return [] as NewsItem[];
+      });
+
   // Fetch latest news, blog posts, and ParaAnaliz YouTube videos concurrently
-  const [newsData, blogData, videos] = await Promise.all([
+  const [newsData, blogData, videos, taggedNewsDocs] = await Promise.all([
     fetchNewsList(1, 60),
-    fetchBlogList(1, 40),
+    fetchBlogList(1, 18),
     fetchParaAnalizVideos(),
+    fetchTagged(),
   ]);
-  
+
   ytVideos = videos;
   const latestNewsDocs = newsData.docs;
-  
+
   // Filter for unique authors to show only their latest blog post
   const uniqueAuthors = new Map<number, BlogItem>();
   blogData.docs.forEach(post => {
@@ -38,23 +56,6 @@ try {
     }
   });
   blogs = Array.from(uniqueAuthors.values()).slice(0, 18);
-
-  // Fetch slide-tagged news items for slot positioning
-  const TOTAL_SLOTS = 25;
-  const TAGGED_SLOTS = 10; // only first 10 slots are editor-tag-bound; 11-20 flow by date
-  let taggedNewsDocs: NewsItem[] = [];
-  try {
-    const slideSlugs = Array.from({ length: TAGGED_SLOTS }, (_, i) => `slide-${String(i + 1).padStart(2, '0')}`);
-    let endpoint = `/api/news?limit=30&where[category][not_in][]=28`;
-    slideSlugs.forEach(slug => {
-      endpoint += `&where[tags.slug][in][]=${slug}`;
-    });
-
-    const taggedRes = await fetchFromPayload(endpoint) as NewsListResponse;
-    taggedNewsDocs = taggedRes.docs;
-  } catch (err) {
-    console.error("Error fetching tagged slider items:", err);
-  }
 
   const filterAds = (item: NewsItem) => item.category && item.category.id !== 28;
   const isSlide0 = (item: NewsItem) => item.tags?.some(t => t.slug === 'slide0') ?? false;

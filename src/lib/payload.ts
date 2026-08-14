@@ -13,26 +13,127 @@ import { env as cfEnv } from 'cloudflare:workers';
 const PUBLIC_API_URL =
   import.meta.env.PAYLOAD_API_URL ?? 'https://admin.paraanaliz.com';
 
-/**
- * Core fetch helper.
- * Uses PABACK Service Binding in production, public URL in local dev.
- */
-export async function fetchFromPayload(endpoint: string): Promise<unknown> {
-  let res: Response;
+/** Payload API yanıtları için Cloudflare Cache API TTL (saniye). */
+export const PAYLOAD_CACHE_TTL = 120;
 
+/**
+ * Liste sorgularında payload'u küçültmek için Payload `select` parametresi.
+ * `body` (Lexical rich text) dışarıda bırakılır — liste sayfaları gerekmez.
+ */
+const NEWS_LIST_SELECT =
+  '&select[title]=true&select[slug]=true&select[category]=true' +
+  '&select[author]=true&select[featuredImage]=true&select[tags]=true' +
+  '&select[seo]=true&select[publishedAt]=true&select[updatedAt]=true&select[status]=true';
+
+const BLOG_LIST_SELECT =
+  '&select[title]=true&select[slug]=true&select[category]=true' +
+  '&select[author]=true&select[featuredImage]=true' +
+  '&select[seo]=true&select[publishedAt]=true&select[updatedAt]=true&select[status]=true';
+
+/** Cloudflare Cache API — yalnızca Workers runtime'da mevcuttur (prod). */
+function getCache(): any {
+  try {
+    // @ts-ignore
+    return typeof caches !== 'undefined' && caches.default ? caches.default : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Edge cache'e yanıt yazar (hatalar sessizce yutulur). */
+async function cachePut(
+  cache: any,
+  key: Request,
+  body: ArrayBuffer,
+  status: number,
+  contentType: string | null,
+  ttl: number
+): Promise<void> {
+  try {
+    await cache.put(
+      key,
+      new Response(body, {
+        status,
+        headers: {
+          'content-type': contentType ?? 'application/json',
+          'cache-control': `public, max-age=${ttl}`,
+        },
+      })
+    );
+  } catch {
+    // cache yazma hatası kritik değil
+  }
+}
+
+/** Payload backend'in geçici 5xx hatalarına karşı retry ayarları. */
+const RETRY_STATUSES = [500, 502, 503, 504];
+const MAX_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 400;
+
+/**
+ * Production list/detail reads are served by paback's lightweight `/api/lite/*`
+ * endpoints (raw D1, no Payload cold-start cost). Local dev keeps the full
+ * Payload REST API via the public URL.
+ *
+ * Only `/api/news?...` / `/api/blog?...` (query-string reads) are rewritten;
+ * `/api/news/{id}` path lookups stay on the full Payload API.
+ */
+function toLiteEndpoint(endpoint: string): string {
+  return endpoint
+    .replace(/^\/api\/news(?=\?|$)/, '/api/lite/news')
+    .replace(/^\/api\/blog(?=\?|$)/, '/api/lite/blog');
+}
+
+async function fetchPayloadOnce(endpoint: string): Promise<Response> {
   // @ts-ignore
   const paback = (cfEnv as any).PABACK;
+  return paback
+    ? paback.fetch(`http://admin${toLiteEndpoint(endpoint)}`)
+    : fetch(`${PUBLIC_API_URL}${endpoint}`);
+}
 
-  if (paback) {
-    // Production: Service Binding — direct Worker-to-Worker call
-    res = await paback.fetch(`http://admin${endpoint}`);
-  } else {
-    // Local dev: public URL
-    res = await fetch(`${PUBLIC_API_URL}${endpoint}`);
+/**
+ * Core fetch helper.
+ * Production: PABACK Service Binding ile `http://admin/<endpoint>`, yanıtlar
+ * Cloudflare Cache API'de TTL kadar önbelleklenir.
+ * Local dev: public URL (cache yok).
+ *
+ * Geçici 5xx (500/502/503/504) ve ağ hatalarına karşı MAX_ATTEMPTS kadar
+ * retry yapılır — Payload backend dengesiz (1.8–37s, anlık 500/503).
+ */
+export async function fetchFromPayload(endpoint: string): Promise<unknown> {
+  const cache = getCache();
+  const cacheKey = new Request(`https://paraanaliz.com/.payload-cache${endpoint}`);
+
+  if (cache) {
+    try {
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached.json();
+    } catch {
+      // cache okuma hatası → taze istek
+    }
   }
 
-  if (!res.ok) throw new Error(`Payload API error: ${res.status} ${endpoint}`);
-  return res.json();
+  let res: Response | null = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      res = await fetchPayloadOnce(endpoint);
+      // 4xx kalıcı hatadır — retry yok; 5xx'te son denemeye kadar devam et
+      if (res.ok || !RETRY_STATUSES.includes(res.status) || attempt === MAX_ATTEMPTS) break;
+    } catch (err) {
+      if (attempt === MAX_ATTEMPTS) throw err;
+    }
+    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+  }
+
+  const finalRes = res!;
+  if (finalRes.ok && cache) {
+    const body = await finalRes.clone().arrayBuffer();
+    await cachePut(cache, cacheKey, body, finalRes.status, finalRes.headers.get('content-type'), PAYLOAD_CACHE_TTL);
+  }
+
+  if (!finalRes.ok) throw new Error(`Payload API error: ${finalRes.status} ${endpoint}`);
+  return finalRes.json();
 }
 
 // --- Type definitions ---
@@ -119,6 +220,7 @@ export async function fetchNewsList(
       });
     }
   }
+  endpoint += NEWS_LIST_SELECT;
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
 }
 
@@ -128,7 +230,7 @@ export async function fetchNewsByCategory(
   page = 1,
   limit = 20
 ): Promise<NewsListResponse> {
-  const endpoint = `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&where[category][equals]=${categoryId}&sort=-publishedAt`;
+  const endpoint = `/api/news?depth=1&draft=true&trash=false&page=${page}&limit=${limit}&where[category][equals]=${categoryId}&sort=-publishedAt${NEWS_LIST_SELECT}`;
   return fetchFromPayload(endpoint) as Promise<NewsListResponse>;
 }
 
@@ -254,7 +356,7 @@ export async function fetchBlogList(
   limit = 10
 ): Promise<BlogListResponse> {
   return fetchFromPayload(
-    `/api/blog?depth=2&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt`
+    `/api/blog?depth=2&draft=true&trash=false&page=${page}&limit=${limit}&sort=-publishedAt${BLOG_LIST_SELECT}`
   ) as Promise<BlogListResponse>;
 }
 
